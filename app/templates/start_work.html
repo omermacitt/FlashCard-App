@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block title %}Çalışma Modu Seçimi{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .mode-selection-container {
+            min-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        .mode-selection-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .mode-selection-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .mode-selection-header p {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .mode-cards {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .mode-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-width: 280px;
+            max-width: 320px;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+        }
+
+        .mode-card.selected {
+            border-color: #ffb347;
+            border-width: 3px;
+            background: linear-gradient(135deg, #fff 0%, #fff8f0 100%);
+            box-shadow: 0 12px 40px rgba(255, 179, 71, 0.25);
+            transform: translateY(-4px);
+            position: relative;
+        }
+
+        .mode-card.selected::before {
+            content: '✓';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ffb347;
+            color: #23232b;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(255, 179, 71, 0.4);
+        }
+
+        .mode-card.selected h3 {
+            color: #ff8c42;
+        }
+
+        .mode-card-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        .mode-card.quiz .mode-card-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .mode-card.writing .mode-card-icon {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .mode-card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #23232b;
+            margin-bottom: 1rem;
+        }
+
+        .mode-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .mode-card-features {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .mode-card-features li {
+            color: #555;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .mode-card-features i {
+            color: #28a745;
+            margin-right: 0.5rem;
+            width: 16px;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #ffb347 0%, #ff8c42 100%);
+            border: none;
+            color: #23232b;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 1rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(255, 179, 71, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 179, 71, 0.4);
+            color: #23232b;
+        }
+
+        .start-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 2px solid #ddd;
+            color: #666;
+            font-size: 1rem;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .back-btn:hover {
+            border-color: #999;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        @media (max-width: 768px) {
+            .mode-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .mode-card {
+                min-width: 260px;
+            }
+
+            .mode-selection-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="mode-selection-container">
+        <div class="mode-selection-header">
+            <h1>Çalışma Modunu Seçin</h1>
+            <p>Hangi yöntemle çalışmak istiyorsunuz? Her iki mod da öğrenmenizi destekler, ancak farklı becerileri
+                geliştirir.</p>
+        </div>
+
+        <div class="mode-cards">
+            <div class="mode-card quiz" onclick="selectMode('quiz')">
+                <div class="mode-card-icon">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <h3>Quiz Modu</h3>
+                <p>Hızlı ve eğlenceli çoktan seçmeli sorular ile kelimelerinizi test edin.</p>
+                <ul class="mode-card-features">
+                    <li><i class="fas fa-check"></i> Hızlı tekrar ve pratik</li>
+                    <li><i class="fas fa-check"></i> Mobil cihazlarda kolay kullanım</li>
+                    <li><i class="fas fa-check"></i> Anında geri bildirim</li>
+                    <li><i class="fas fa-check"></i> 4 seçenekli sorular</li>
+                </ul>
+            </div>
+
+            <div class="mode-card writing" onclick="selectMode('writing')">
+                <div class="mode-card-icon">
+                    <i class="fas fa-pen"></i>
+                </div>
+                <h3>Yazma Modu</h3>
+                <p>Kelimeyi görüp anlamını yazarak daha derin öğrenme sağlayın.</p>
+                <ul class="mode-card-features">
+                    <li><i class="fas fa-check"></i> Derin öğrenme ve hafıza güçlendirme</li>
+                    <li><i class="fas fa-check"></i> Gerçek bilgiyi test eder</li>
+                    <li><i class="fas fa-check"></i> Yazım hatalarını tolere eder</li>
+                    <li><i class="fas fa-check"></i> Eş anlamlı kelimeleri kabul eder</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button class="btn start-btn" id="startBtn" onclick="startWork()" disabled>
+                <i class="fas fa-play"></i> Çalışmaya Başla
+            </button>
+            <br>
+            <a href="/dashboard" class="btn back-btn">
+                <i class="fas fa-arrow-left"></i> Geri Dön
+            </a>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        let selectedMode = null;
+
+        function selectMode(mode) {
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`.mode-card.${mode}`).classList.add('selected');
+            selectedMode = mode;
+            document.getElementById('startBtn').disabled = false;
+        }
+
+        function startWork() {
+            if (!selectedMode) {
+                alert('Lütfen bir çalışma modu seçin.');
+                return;
+            }
+            if (selectedMode === 'quiz') {
+                window.location.href = '/quiz/select';
+            } else if (selectedMode === 'writing') {
+                window.location.href = '/writing/select';
+            }
+        }
+
+        function startQuiz(type) {
+            window.location.href = '/quiz?mode=' + type;
+        }
+
+        function closeQuizModal() {
+            document.getElementById('quizTypeModal').style.display = 'none';
+        }
+    </script>
+{% endblock %} 

@@ -1,0 +1,466 @@
+{% extends "base.html" %}
+
+{% block title %}{{ flashcard.name }} - Düzenle{% endblock %}
+
+{% block content %}
+<div class="container mt-3 pt-2">
+    <!-- Header Section -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/add-flashcard" class="text-decoration-none">Flashcard'larım</a></li>
+                    <li class="breadcrumb-item"><a href="/flashcard/{{ flashcard.id }}/detail" class="text-decoration-none">{{ flashcard.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Düzenle</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold mb-1" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                <i class="fas fa-edit me-2"></i>Flashcard Düzenle
+            </h1>
+            <p class="fs-5 text-white mb-1">{{ flashcard.name }}</p>
+            <p class="text-muted mb-0">Flashcard bilgilerini güncelleyin</p>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+                    <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Edit Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                <div class="card-body p-5">
+                    <form id="editFlashcardForm" method="POST" action="/flashcard/{{ flashcard.id }}/edit">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-8">
+                                <label for="title" class="form-label fw-semibold text-muted small">BAŞLIK</label>
+                                <input type="text" class="form-control form-control-lg shadow-sm" id="title" name="title"
+                                       value="{{ flashcard.name }}" required autocomplete="off"
+                                       style="border-radius: 12px; border: 1px solid #e5e7eb;">
+                                <div class="form-text mt-1">Kısa ve açıklayıcı bir başlık seçin</div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="category" class="form-label fw-semibold text-muted small">KATEGORİ</label>
+                                <select class="form-select form-select-lg shadow-sm" id="category" name="category"
+                                        style="border-radius: 12px; border: 1px solid #e5e7eb;">
+                                    <option value="">Seçiniz</option>
+                                    <option value="temel" {{ 'selected' if flashcard.category == 'temel' else '' }}>Temel Kelimeler</option>
+                                    <option value="is" {{ 'selected' if flashcard.category == 'is' else '' }}>İş Hayatı</option>
+                                    <option value="gunluk" {{ 'selected' if flashcard.category == 'gunluk' else '' }}>Günlük Konuşma</option>
+                                    <option value="seyahat" {{ 'selected' if flashcard.category == 'seyahat' else '' }}>Seyahat</option>
+                                    <option value="yemek" {{ 'selected' if flashcard.category == 'yemek' else '' }}>Yemek & Mutfak</option>
+                                    <option value="spor" {{ 'selected' if flashcard.category == 'spor' else '' }}>Spor & Hobi</option>
+                                    <option value="teknoloji" {{ 'selected' if flashcard.category == 'teknoloji' else '' }}>Teknoloji</option>
+                                    <option value="diger" {{ 'selected' if flashcard.category == 'diger' else '' }}>Diğer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label for="description" class="form-label fw-semibold text-muted small">AÇIKLAMA</label>
+                            <textarea class="form-control shadow-sm" id="description" name="description" rows="3"
+                                      placeholder="Bu flashcard hangi konuları kapsıyor? (İsteğe bağlı)"
+                                      style="border-radius: 12px; border: 1px solid #e5e7eb;">{{ flashcard.description or '' }}</textarea>
+                        </div>
+
+                        <!-- Modern Privacy Toggle -->
+                        <div class="mt-4 p-4" style="background-color: #f8f9fa; border-radius: 16px;">
+                            <div class="row align-items-center">
+                                <div class="col-8">
+                                    <h6 class="mb-1 fw-semibold">Görünürlük Ayarı</h6>
+                                    <p class="text-muted small mb-0">Flashcard'ınızı diğer kullanıcılarla paylaşın</p>
+                                </div>
+                                <div class="col-4 text-end">
+                                    <div class="form-check form-switch form-switch-lg">
+                                        <input class="form-check-input" type="checkbox" id="privacyToggle" name="is_public"
+                                               {{ 'checked' if flashcard.visibility == 'public' else '' }}
+                                               style="width: 60px; height: 30px; cursor: pointer;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 d-flex align-items-center gap-3" id="privacyStatus">
+                                <div class="privacy-option private-option {{ 'active' if flashcard.visibility == 'private' else '' }}" style="flex: 1; text-align: center; padding: 12px; border-radius: 12px; background-color: white; border: 2px solid #e5e7eb; cursor: pointer; transition: all 0.3s;">
+                                    <i class="fas fa-lock fa-2x mb-2" style="color: #6b7280;"></i>
+                                    <p class="mb-0 fw-semibold">Özel</p>
+                                    <small class="text-muted">Sadece siz görebilirsiniz</small>
+                                </div>
+                                <div class="privacy-option public-option {{ 'active' if flashcard.visibility == 'public' else '' }}" style="flex: 1; text-align: center; padding: 12px; border-radius: 12px; background-color: white; border: 2px solid #e5e7eb; cursor: pointer; transition: all 0.3s;">
+                                    <i class="fas fa-globe fa-2x mb-2" style="color: #10b981;"></i>
+                                    <p class="mb-0 fw-semibold">Herkese Açık</p>
+                                    <small class="text-muted">Herkes görebilir</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Language Selection -->
+                        <div class="mt-4">
+                            <label class="form-label fw-semibold text-muted small">DİL SEÇİMİ</label>
+                            <div class="row g-2 align-items-center">
+                                <div class="col-5">
+                                    <select class="form-select shadow-sm" id="language_from" name="language_from" required
+                                            style="border-radius: 12px; border: 1px solid #e5e7eb;">
+                                        <option value="tr" {{ 'selected' if flashcard.front_language == 'tr' else '' }}>🇹🇷 Türkçe</option>
+                                        <option value="en" {{ 'selected' if flashcard.front_language == 'en' else '' }}>🇬🇧 İngilizce</option>
+                                        <option value="de" {{ 'selected' if flashcard.front_language == 'de' else '' }}>🇩🇪 Almanca</option>
+                                        <option value="fr" {{ 'selected' if flashcard.front_language == 'fr' else '' }}>🇫🇷 Fransızca</option>
+                                        <option value="es" {{ 'selected' if flashcard.front_language == 'es' else '' }}>🇪🇸 İspanyolca</option>
+                                    </select>
+                                </div>
+                                <div class="col-2 text-center">
+                                    <button type="button" class="btn btn-light rounded-circle shadow-sm" id="swapLanguages"
+                                            style="width: 40px; height: 40px; padding: 0;" title="Dilleri Değiştir">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
+                                </div>
+                                <div class="col-5">
+                                    <select class="form-select shadow-sm" id="language_to" name="language_to" required
+                                            style="border-radius: 12px; border: 1px solid #e5e7eb;">
+                                        <option value="en" {{ 'selected' if flashcard.back_language == 'en' else '' }}>🇬🇧 İngilizce</option>
+                                        <option value="tr" {{ 'selected' if flashcard.back_language == 'tr' else '' }}>🇹🇷 Türkçe</option>
+                                        <option value="de" {{ 'selected' if flashcard.back_language == 'de' else '' }}>🇩🇪 Almanca</option>
+                                        <option value="fr" {{ 'selected' if flashcard.back_language == 'fr' else '' }}>🇫🇷 Fransızca</option>
+                                        <option value="es" {{ 'selected' if flashcard.back_language == 'es' else '' }}>🇪🇸 İspanyolca</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert mt-4 mb-0" style="background-color: #fff3cd; border: none; border-radius: 12px;">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-exclamation-triangle me-3 mt-1" style="color: #856404;"></i>
+                                <div>
+                                    <strong style="color: #856404;">Uyarı:</strong>
+                                    <span style="color: #856404;">Dil ayarlarını değiştirmek mevcut kelimelerin dil bilgilerini etkileyebilir. Bu değişikliği yapmadan önce emin olun!</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3">
+                            <a href="/flashcard/{{ flashcard.id }}/detail" class="btn btn-light btn-lg px-4" style="border-radius: 12px;">
+                                <i class="fas fa-arrow-left me-2"></i>Geri Dön
+                            </a>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4" id="resetForm" style="border-radius: 12px;">
+                                    <i class="fas fa-undo me-2"></i>Sıfırla
+                                </button>
+                                <button type="button" class="btn btn-lg px-4 text-white" id="saveChanges"
+                                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 12px;">
+                                    <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none;">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <div style="width: 80px; height: 80px; background-color: #e0f2fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <i class="fas fa-save fa-2x" style="color: #667eea;"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-3">Değişiklikleri Kaydet</h5>
+                <p class="text-muted mb-4">Bu flashcard'da yapılan değişiklikleri kaydetmek istediğinizden emin misiniz?</p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <button type="button" class="btn btn-light btn-lg px-4" data-bs-dismiss="modal" style="border-radius: 12px;">
+                        İptal
+                    </button>
+                    <button type="button" class="btn btn-lg px-4 text-white" id="confirmSaveBtn"
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 12px;">
+                        <i class="fas fa-check me-2"></i>Evet, Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom Styles */
+.privacy-option {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease !important;
+}
+
+.privacy-option.active {
+    border-color: #667eea !important;
+    background-color: #f0f4ff !important;
+    transform: scale(1.02);
+}
+
+.privacy-option.active::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background-color: #667eea;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: checkmarkBounce 0.4s ease-out;
+}
+
+.privacy-option.active::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    animation: checkmarkBounce 0.4s ease-out 0.1s both;
+}
+
+@keyframes checkmarkBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.form-switch-lg .form-check-input {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='white' stroke='%23dee2e6' stroke-width='0.5'/%3e%3c/svg%3e");
+    background-color: #dee2e6;
+    border: 2px solid #dee2e6;
+    transition: all 0.3s ease;
+    transform: scale(1);
+}
+
+.form-switch-lg .form-check-input:checked {
+    background-color: #10b981;
+    border-color: #10b981;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='white'/%3e%3c/svg%3e");
+    transform: scale(1.05);
+}
+
+.form-switch-lg .form-check-input:focus {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+}
+
+/* Form validation styles */
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Store original form values for reset functionality
+    const originalValues = {
+        title: document.getElementById('title').value,
+        category: document.getElementById('category').value,
+        description: document.getElementById('description').value,
+        language_from: document.getElementById('language_from').value,
+        language_to: document.getElementById('language_to').value,
+        is_public: document.getElementById('privacyToggle').checked
+    };
+
+    // Privacy toggle functionality
+    const privacyToggle = document.getElementById('privacyToggle');
+    const privateOption = document.querySelector('.private-option');
+    const publicOption = document.querySelector('.public-option');
+    
+    function updatePrivacyOptions() {
+        // Add transition classes for smooth animation
+        privateOption.style.transition = 'all 0.3s ease';
+        publicOption.style.transition = 'all 0.3s ease';
+        
+        if (privacyToggle.checked) {
+            privateOption.classList.remove('active');
+            publicOption.classList.add('active');
+        } else {
+            privateOption.classList.add('active');
+            publicOption.classList.remove('active');
+        }
+    }
+    
+    privacyToggle.addEventListener('change', updatePrivacyOptions);
+    
+    // Privacy option click handlers
+    privateOption.addEventListener('click', function() {
+        privacyToggle.checked = false;
+        updatePrivacyOptions();
+    });
+    
+    publicOption.addEventListener('click', function() {
+        privacyToggle.checked = true;
+        updatePrivacyOptions();
+    });
+    
+    // Language change functionality
+    function updateLanguageOptions() {
+        const fromSelect = document.getElementById('language_from');
+        const toSelect = document.getElementById('language_to');
+        
+        const fromValue = fromSelect.value;
+        const toValue = toSelect.value;
+        
+        // Update 'to' language options
+        Array.from(toSelect.options).forEach(option => {
+            option.disabled = option.value === fromValue;
+        });
+        
+        // Update 'from' language options
+        Array.from(fromSelect.options).forEach(option => {
+            option.disabled = option.value === toValue;
+        });
+        
+        // If current selection is disabled, change to first available option
+        if (toSelect.value === fromValue) {
+            for (let option of toSelect.options) {
+                if (!option.disabled) {
+                    toSelect.value = option.value;
+                    break;
+                }
+            }
+        }
+        
+        if (fromSelect.value === toValue) {
+            for (let option of fromSelect.options) {
+                if (!option.disabled) {
+                    fromSelect.value = option.value;
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Language swap functionality
+    document.getElementById('swapLanguages').addEventListener('click', function() {
+        const fromSelect = document.getElementById('language_from');
+        const toSelect = document.getElementById('language_to');
+        
+        const fromValue = fromSelect.value;
+        const toValue = toSelect.value;
+        
+        fromSelect.value = toValue;
+        toSelect.value = fromValue;
+        
+        updateLanguageOptions();
+    });
+    
+    // Add event listeners for language selection changes
+    document.getElementById('language_from').addEventListener('change', updateLanguageOptions);
+    document.getElementById('language_to').addEventListener('change', updateLanguageOptions);
+    
+    // Initialize language options
+    updateLanguageOptions();
+    
+    // Reset form functionality
+    document.getElementById('resetForm').addEventListener('click', function() {
+        if (confirm('Tüm değişiklikleri geri almak istediğinizden emin misiniz?')) {
+            document.getElementById('title').value = originalValues.title;
+            document.getElementById('category').value = originalValues.category;
+            document.getElementById('description').value = originalValues.description;
+            document.getElementById('language_from').value = originalValues.language_from;
+            document.getElementById('language_to').value = originalValues.language_to;
+            document.getElementById('privacyToggle').checked = originalValues.is_public;
+            
+            updatePrivacyOptions();
+            updateLanguageOptions();
+        }
+    });
+    
+    // Save changes with confirmation
+    document.getElementById('saveChanges').addEventListener('click', function() {
+        // Basic form validation
+        const title = document.getElementById('title').value.trim();
+        
+        if (!title) {
+            alert('Başlık alanı zorunludur!');
+            document.getElementById('title').focus();
+            return;
+        }
+        
+        if (title.length < 2) {
+            alert('Başlık en az 2 karakter olmalıdır!');
+            document.getElementById('title').focus();
+            return;
+        }
+        
+        // Show confirmation modal
+        const modal = new bootstrap.Modal(document.getElementById('confirmSaveModal'));
+        modal.show();
+    });
+    
+    // Confirm save button
+    document.getElementById('confirmSaveBtn').addEventListener('click', function() {
+        document.getElementById('editFlashcardForm').submit();
+    });
+    
+    // Check for unsaved changes before leaving
+    let formChanged = false;
+    
+    function checkForChanges() {
+        const currentValues = {
+            title: document.getElementById('title').value,
+            category: document.getElementById('category').value,
+            description: document.getElementById('description').value,
+            language_from: document.getElementById('language_from').value,
+            language_to: document.getElementById('language_to').value,
+            is_public: document.getElementById('privacyToggle').checked
+        };
+        
+        formChanged = JSON.stringify(currentValues) !== JSON.stringify(originalValues);
+    }
+    
+    // Add change listeners to all form elements
+    ['title', 'category', 'description', 'language_from', 'language_to'].forEach(id => {
+        document.getElementById(id).addEventListener('input', checkForChanges);
+        document.getElementById(id).addEventListener('change', checkForChanges);
+    });
+    
+    document.getElementById('privacyToggle').addEventListener('change', checkForChanges);
+    
+    // Warn before leaving if there are unsaved changes
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'Kaydedilmemiş değişiklikleriniz var. Sayfadan ayrılmak istediğinizden emin misiniz?';
+            return e.returnValue;
+        }
+    });
+    
+    // Don't warn when submitting the form
+    document.getElementById('editFlashcardForm').addEventListener('submit', function() {
+        formChanged = false;
+    });
+});
+</script>
+
+{% endblock %}

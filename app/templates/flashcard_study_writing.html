@@ -1,0 +1,711 @@
+{% extends "base.html" %}
+
+{% block title %}{{ flashcard.name }} - Writing Çalışması{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Footer gizle - tam ekran çalışma modu için */
+footer {
+    display: none !important;
+}
+
+/* Body padding ayarı */
+body {
+    padding-bottom: 0 !important;
+}
+
+/* Writing Card Styles */
+.writing-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    border: none;
+    transition: all 0.3s ease;
+    min-height: 300px;
+}
+
+.writing-card:hover {
+    box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+}
+
+.answer-input {
+    font-size: 1.2rem;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 15px 20px;
+    transition: all 0.3s ease;
+    min-height: 60px;
+    resize: none;
+}
+
+.answer-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.action-buttons {
+    gap: 12px;
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-outline-custom {
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-custom:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+    color: white;
+}
+
+.feedback {
+    animation: fadeInUp 0.5s ease;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.feedback.correct {
+    background-color: #d1f2eb;
+    border-left: 5px solid #27ae60;
+    color: #27ae60;
+}
+
+.feedback.incorrect {
+    background-color: #fadbd8;
+    border-left: 5px solid #e74c3c;
+    color: #e74c3c;
+}
+
+.feedback.loading {
+    background-color: #e3f2fd;
+    border-left: 5px solid #2196f3;
+    color: #1976d2;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.word-counter {
+    background: rgba(255,255,255,0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.difficulty-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.difficulty-easy {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.difficulty-medium {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.difficulty-hard {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Hint Styles */
+.hint-container {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-left: 4px solid #f39c12;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.2);
+    text-align: center;
+}
+
+.hint-label {
+    font-weight: 600;
+    color: #856404;
+    margin-right: 10px;
+}
+
+.hint-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #856404;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 3px;
+}
+
+.btn-outline-warning {
+    border: 2px solid #f39c12;
+    color: #f39c12;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-warning:hover {
+    background-color: #f39c12;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.3);
+}
+
+.btn-outline-warning:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-outline-warning:disabled:hover {
+    background-color: transparent;
+    color: #f39c12;
+    transform: none;
+    box-shadow: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Include Navbar -->
+{% include 'navbar.html' %}
+
+<div class="container-fluid vh-100 d-flex flex-column" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-top: -80px; padding-top: 80px;">
+    
+    <!-- Header -->
+    <div class="row py-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center text-white">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-light btn-sm rounded-circle" onclick="confirmExit()" title="Çıkış">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div>
+                        <h5 class="mb-0 fw-bold">{{ flashcard.name }}</h5>
+                        <small class="opacity-75">Writing Çalışması</small>
+                    </div>
+                </div>
+                
+                <!-- Progress Info -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="word-counter">
+                        <span id="currentWord">1</span> / <span id="totalWords">{{ total_words }}</span>
+                    </div>
+                    <div class="progress" style="width: 200px; height: 8px; background-color: rgba(255,255,255,0.2);">
+                        <div class="progress-bar bg-warning" id="progressBar" style="width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-custom btn-sm" onclick="skipWord()" id="skipBtn">
+                        <i class="fas fa-forward me-1"></i>Atla
+                    </button>
+                    <button class="btn btn-outline-custom btn-sm" onclick="finishWriting()" id="finishBtn">
+                        <i class="fas fa-flag-checkered me-1"></i>Bitir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row flex-grow-1 p-3">
+        <div class="col-12 h-100">
+            {% if words %}
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <div class="writing-card p-5 text-center" style="width: 100%; max-width: 600px;">
+                    
+                    <!-- Word Display -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-center mb-3">
+                            <span class="difficulty-badge" id="difficultyBadge">Orta</span>
+                        </div>
+                        <h2 class="fw-bold mb-2" style="color: #667eea; font-size: 2.5rem;" id="questionWord">
+                            {{ words[0].word if words else '' }}
+                        </h2>
+                        <p class="text-muted mb-4" style="font-size: 1.1rem;">
+                            Bu kelimenin <strong id="targetLanguage">{{ words[0].back_language|upper if words else '' }}</strong> karşılığını yazın
+                        </p>
+                    </div>
+
+                    <!-- Hint Area -->
+                    <div class="mb-3" id="hintArea" style="display: none;">
+                        <div class="hint-container">
+                            <span class="hint-label">İpucu:</span>
+                            <span class="hint-text" id="hintText"></span>
+                        </div>
+                    </div>
+
+                    <!-- Answer Input -->
+                    <div class="mb-4">
+                        <textarea 
+                            class="form-control answer-input text-center" 
+                            id="answerInput" 
+                            placeholder="Cevabınızı buraya yazın..."
+                            rows="2"
+                            autocomplete="off"
+                            spellcheck="false"
+                        ></textarea>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons d-flex justify-content-center mb-3">
+                        <button class="btn btn-outline-warning me-2" onclick="showHint()" id="hintBtn">
+                            <i class="fas fa-lightbulb me-2"></i>İpucu
+                        </button>
+                        <button class="btn btn-primary-custom" onclick="checkAnswer()" id="checkBtn">
+                            <i class="fas fa-check me-2"></i>Kontrol Et
+                        </button>
+                    </div>
+
+                    <!-- Feedback Area -->
+                    <div id="feedbackArea"></div>
+
+                    <!-- Next Button (hidden initially) -->
+                    <div class="mt-3" id="nextButtonArea" style="display: none;">
+                        <button class="btn btn-primary-custom" onclick="nextWord()">
+                            <i class="fas fa-arrow-right me-2"></i>Sonraki Kelime
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- No Words State -->
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <div class="text-center text-white">
+                    <div class="mb-4">
+                        <i class="fas fa-exclamation-triangle fa-4x opacity-50"></i>
+                    </div>
+                    <h3 class="mb-3">Kelime Bulunamadı</h3>
+                    <p class="mb-4 opacity-75">
+                        Bu dil modunda çalışabileceğiniz kelime bulunmuyor.<br>
+                        Lütfen farklı bir dil modu seçin veya flashcard'ınıza kelime ekleyin.
+                    </p>
+                    <a href="/flashcard/{{ flashcard.id }}/study" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Çalışma Moduna Dön
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Exit Confirmation Modal -->
+<div class="modal fade" id="exitModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-body text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-question-circle fa-3x text-warning"></i>
+                </div>
+                <h5 class="mb-3">Çalışmayı Sonlandır</h5>
+                <p class="text-muted mb-4">
+                    Çalışmanızı şimdi sonlandırmak istediğinizden emin misiniz?<br>
+                    İlerlemeniz kaydedilecektir.
+                </p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Devam Et
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="forceExit()">
+                        Evet, Bitir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Global variables
+let words = {{ words_json | safe }};
+let currentWordIndex = 0;
+let answers = [];
+let langMode = "{{ lang_mode }}";
+let flashcardId = {{ flashcard.id }};
+let hintIndex = 0; // Track hint progress
+
+// Audio context for sound effects
+let audioContext;
+let isSoundEnabled = true;
+
+// Initialize audio context
+function initAudioContext() {
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+        console.log('Web Audio API not supported');
+        isSoundEnabled = false;
+    }
+}
+
+// Play success sound
+function playSuccessSound() {
+    if (!isSoundEnabled || !audioContext) return;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+    
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+}
+
+// Play error sound
+function playErrorSound() {
+    if (!isSoundEnabled || !audioContext) return;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3
+    oscillator.frequency.setValueAtTime(196, audioContext.currentTime + 0.1); // G3
+    
+    oscillator.type = 'sawtooth';
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    initAudioContext();
+    if (words.length > 0) {
+        displayCurrentWord();
+        updateProgress();
+        
+        // Enter key handler
+        document.getElementById('answerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (document.getElementById('checkBtn').style.display !== 'none') {
+                    checkAnswer();
+                } else {
+                    nextWord();
+                }
+            }
+        });
+        
+        // Focus on input
+        document.getElementById('answerInput').focus();
+    }
+});
+
+function displayCurrentWord() {
+    if (currentWordIndex >= words.length) {
+        finishWriting();
+        return;
+    }
+    
+    const word = words[currentWordIndex];
+    
+    // Update word display
+    document.getElementById('questionWord').textContent = word.word;
+    document.getElementById('targetLanguage').textContent = word.back_language.toUpperCase();
+    
+    // Update difficulty badge
+    const difficultyBadge = document.getElementById('difficultyBadge');
+    const difficulty = word.difficulty || 'medium';
+    
+    difficultyBadge.className = 'difficulty-badge';
+    
+    if (difficulty === 'easy' || difficulty === 'kolay') {
+        difficultyBadge.classList.add('difficulty-easy');
+        difficultyBadge.textContent = 'Kolay';
+    } else if (difficulty === 'hard' || difficulty === 'zor') {
+        difficultyBadge.classList.add('difficulty-hard');
+        difficultyBadge.textContent = 'Zor';
+    } else {
+        difficultyBadge.classList.add('difficulty-medium');
+        difficultyBadge.textContent = 'Orta';
+    }
+    
+    // Clear input and feedback
+    document.getElementById('answerInput').value = '';
+    document.getElementById('feedbackArea').innerHTML = '';
+    document.getElementById('nextButtonArea').style.display = 'none';
+    document.getElementById('checkBtn').style.display = 'inline-block';
+    
+    // Reset hint system
+    hintIndex = 0;
+    document.getElementById('hintArea').style.display = 'none';
+    document.getElementById('hintBtn').disabled = false;
+    document.getElementById('hintBtn').innerHTML = '<i class="fas fa-lightbulb me-2"></i>İpucu';
+    
+    // Focus on input
+    setTimeout(() => {
+        document.getElementById('answerInput').focus();
+    }, 100);
+}
+
+function checkAnswer() {
+    const userAnswer = document.getElementById('answerInput').value.trim();
+    const currentWord = words[currentWordIndex];
+    const correctAnswer = currentWord.answer;
+    
+    if (!userAnswer) {
+        showFeedback('Lütfen bir cevap yazın.', false);
+        return;
+    }
+    
+    // Show loading feedback while checking
+    showFeedback('<i class="fas fa-spinner fa-spin me-2"></i>Kontrol ediliyor...', null);
+    
+    // Send to backend for similarity check
+    fetch(`/flashcard/${flashcardId}/study/writing/check`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            user_answer: userAnswer,
+            correct_answer: correctAnswer,
+            word_id: currentWord.id
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const isCorrect = data.is_correct;
+        
+        // Store answer with backend result
+        answers.push({
+            word_id: currentWord.id,
+            question: currentWord.word,
+            user_answer: userAnswer,
+            correct_answer: correctAnswer,
+            is_correct: isCorrect
+        });
+        
+        // Show feedback
+        if (isCorrect) {
+            if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+                showFeedback(`<i class="fas fa-check-circle me-2"></i>Doğru! <strong>${correctAnswer}</strong>`, true);
+            } else {
+                showFeedback(`<i class="fas fa-check-circle me-2"></i>Doğru! (Benzer cevap kabul edildi)<br><strong>Doğru cevap: ${correctAnswer}</strong>`, true);
+            }
+        } else {
+            showFeedback(`<i class="fas fa-times-circle me-2"></i>Yanlış. Doğru cevap: <strong>${correctAnswer}</strong>`, false);
+        }
+        
+        // Hide check button, show next button
+        document.getElementById('checkBtn').style.display = 'none';
+        document.getElementById('nextButtonArea').style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error checking answer:', error);
+        // Fallback to simple check
+        const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+        
+        answers.push({
+            word_id: currentWord.id,
+            question: currentWord.word,
+            user_answer: userAnswer,
+            correct_answer: correctAnswer,
+            is_correct: isCorrect
+        });
+        
+        showFeedback(isCorrect ? 
+            `<i class="fas fa-check-circle me-2"></i>Doğru! <strong>${correctAnswer}</strong>` : 
+            `<i class="fas fa-times-circle me-2"></i>Yanlış. Doğru cevap: <strong>${correctAnswer}</strong>`, 
+            isCorrect);
+        
+        document.getElementById('checkBtn').style.display = 'none';
+        document.getElementById('nextButtonArea').style.display = 'block';
+    });
+}
+
+function showFeedback(message, isCorrect) {
+    const feedbackArea = document.getElementById('feedbackArea');
+    let className = 'feedback';
+    
+    if (isCorrect === true) {
+        className += ' correct';
+        playSuccessSound(); // Play success sound
+    } else if (isCorrect === false) {
+        className += ' incorrect';
+        playErrorSound(); // Play error sound
+    } else {
+        // Loading state (null)
+        className += ' loading';
+    }
+    
+    feedbackArea.innerHTML = `
+        <div class="${className}">
+            ${message}
+        </div>
+    `;
+}
+
+function nextWord() {
+    currentWordIndex++;
+    updateProgress();
+    
+    if (currentWordIndex >= words.length) {
+        finishWriting();
+    } else {
+        displayCurrentWord();
+    }
+}
+
+function skipWord() {
+    const currentWord = words[currentWordIndex];
+    
+    // Store skipped answer
+    answers.push({
+        word_id: currentWord.id,
+        question: currentWord.word,
+        user_answer: '',
+        correct_answer: currentWord.answer,
+        is_correct: false
+    });
+    
+    nextWord();
+}
+
+function updateProgress() {
+    const progress = (currentWordIndex / words.length) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('currentWord').textContent = Math.min(currentWordIndex + 1, words.length);
+    document.getElementById('totalWords').textContent = words.length;
+}
+
+function confirmExit() {
+    const modal = new bootstrap.Modal(document.getElementById('exitModal'));
+    modal.show();
+}
+
+function forceExit() {
+    finishWriting(true);
+}
+
+function finishWriting(earlyExit = false) {
+    // Send results to server
+    const data = {
+        answers: answers,
+        lang_mode: langMode,
+        early_exit: earlyExit,
+        completed_at: new Date().toISOString()
+    };
+    
+    fetch(`/flashcard/${flashcardId}/study/writing/finish`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Redirect to results page
+            window.location.href = `/flashcard/${flashcardId}/study/writing/result?lang_mode=${langMode}`;
+        } else {
+            console.error('Error saving results:', data);
+            alert('Sonuçlar kaydedilirken bir hata oluştu.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+}
+
+// Hint system
+function showHint() {
+    const currentWord = words[currentWordIndex];
+    const correctAnswer = currentWord.answer;
+    
+    if (hintIndex >= correctAnswer.length) {
+        // All hints shown
+        document.getElementById('hintBtn').disabled = true;
+        document.getElementById('hintBtn').innerHTML = '<i class="fas fa-lightbulb me-2"></i>Tüm İpuçları Gösterildi';
+        return;
+    }
+    
+    // Create hint text with revealed letters
+    let hintText = '';
+    for (let i = 0; i < correctAnswer.length; i++) {
+        if (i <= hintIndex) {
+            hintText += correctAnswer[i];
+        } else {
+            hintText += '_';
+        }
+    }
+    
+    // Show hint
+    document.getElementById('hintText').textContent = hintText;
+    document.getElementById('hintArea').style.display = 'block';
+    
+    // Update hint index
+    hintIndex++;
+    
+    // Update button text
+    if (hintIndex >= correctAnswer.length) {
+        document.getElementById('hintBtn').disabled = true;
+        document.getElementById('hintBtn').innerHTML = '<i class="fas fa-lightbulb me-2"></i>Tüm İpuçları Gösterildi';
+    } else {
+        document.getElementById('hintBtn').innerHTML = `<i class="fas fa-lightbulb me-2"></i>İpucu (${hintIndex}/${correctAnswer.length})`;
+    }
+}
+
+// Prevent accidental page leave
+window.addEventListener('beforeunload', function(e) {
+    if (answers.length > 0 && currentWordIndex < words.length) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+</script>
+{% endblock %}

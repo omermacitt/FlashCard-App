@@ -1,0 +1,227 @@
+<style>
+    .navbar-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .navbar-modern .navbar-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: white !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .navbar-modern .navbar-brand:hover {
+        transform: scale(1.05);
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .navbar-modern .navbar-brand i {
+        background: linear-gradient(45deg, #ffd700, #ffed4a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .navbar-modern .nav-link {
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-radius: 25px;
+        padding: 8px 16px !important;
+        margin: 0 4px;
+    }
+
+    .navbar-modern .nav-link:hover {
+        color: white !important;
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .navbar-modern .nav-link.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: white !important;
+    }
+
+    .navbar-modern .nav-link i {
+        margin-right: 6px;
+    }
+
+    .navbar-modern .navbar-toggler {
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .navbar-modern .navbar-toggler:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .navbar-modern .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    .auth-buttons .nav-link {
+        margin: 0 6px;
+        padding: 10px 20px !important;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white !important;
+    }
+
+    .btn-login:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-register {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white !important;
+    }
+
+    .btn-register:hover {
+        background: linear-gradient(135deg, #e879f9 0%, #ef4444 100%);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
+    }
+
+    .btn-logout {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white !important;
+    }
+
+    .btn-logout:hover {
+        background: linear-gradient(135deg, #ff5252 0%, #d63031 100%);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 25px;
+        padding: 8px 16px;
+        margin-right: 12px;
+        color: white;
+        font-weight: 500;
+    }
+
+    .user-info i {
+        margin-right: 8px;
+        color: #ffd700;
+    }
+
+    @media (max-width: 991px) {
+        .navbar-modern .navbar-nav {
+            padding: 16px 0;
+        }
+        
+        .auth-buttons {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    }
+</style>
+
+<nav class="navbar navbar-modern navbar-expand-lg fixed-top">
+    <div class="container">
+        <!-- Logo/Brand -->
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-graduation-cap me-2"></i>Flashcard App
+        </a>
+
+        <!-- Mobile toggle button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar items -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">
+                        <i class="fas fa-home"></i>Ana Sayfa
+                    </a>
+                </li>
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/add-flashcard">
+                            <i class="fas fa-layer-group"></i>Flashcard Oluştur
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/flashcards">
+                            <i class="fas fa-globe"></i>Tüm Flashcard'lar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-tachometer-alt"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.profile') }}">
+                            <i class="fas fa-user"></i>Profil
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+
+            <!-- Right side navbar items -->
+            <ul class="navbar-nav auth-buttons">
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item d-flex align-items-center">
+                        <div class="user-info d-none d-lg-flex">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Hoş geldin!</span>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-logout" href="/logout">
+                            <i class="fas fa-sign-out-alt"></i>Çıkış Yap
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link btn-login" href="/login">
+                            <i class="fas fa-sign-in-alt"></i>Giriş Yap
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-register" href="/register">
+                            <i class="fas fa-user-plus"></i>Kayıt Ol
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Add top padding to body to account for fixed navbar -->
+<style>
+    body {
+        padding-top: 80px;
+    }
+</style> 

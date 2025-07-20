@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+    --bg-1:#1b1b26;
+    --bg-2:#23232b;
+    --txt-main:#fff;
+    --txt-accent:#ffeba7;
+    --txt-muted:#8c8c8c;
+    --success:#28a745;
+    --danger:#dc3545;
+    --empty:#ffc107;
+}
+body{background:var(--bg-1);font-family:'Poppins',sans-serif;}
+.quiz-result-card{
+    background:var(--bg-2);
+    border-radius:16px;
+    box-shadow:0 8px 32px rgba(0,0,0,.28);
+    padding:2.2rem 2.3rem 2rem;
+    max-width:540px;
+    margin:0 auto;
+    display:flex;flex-direction:column;align-items:stretch;
+}
+.quiz-result-title{
+    color:var(--txt-accent);
+    font-size:2rem;
+    font-weight:800;
+    letter-spacing:1px;
+    text-align:center;
+    margin-bottom:2rem;
+}
+.quiz-result-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    background:none;
+    margin-bottom:1.7rem;
+    font-size:1.05rem;
+}
+.quiz-result-table th{
+    background:rgba(255,235,167,0.08);
+    color:var(--txt-accent);
+    font-weight:700;
+    padding:.7rem .5rem;
+    border:none;
+    text-align:center;
+    font-size:1.07rem;
+}
+.quiz-result-table td{
+    background:none;
+    color:var(--txt-main);
+    padding:.6rem .5rem;
+    border-top:1.5px solid #222;
+    text-align:center;
+    font-size:1.05rem;
+}
+.quiz-result-table tr:first-child td{border-top:none;}
+.quiz-status{
+    display:inline-block;
+    padding:.25em 1.1em;
+    border-radius:16px;
+    font-weight:700;
+    font-size:1.01em;
+    letter-spacing:.5px;
+}
+.quiz-status.success{background:rgba(40,167,69,0.12);color:var(--success);}
+.quiz-status.danger{background:rgba(220,53,69,0.12);color:var(--danger);}
+.quiz-status.empty{background:rgba(255,193,7,0.12);color:var(--empty);}
+.quiz-btn-row{display:flex;justify-content:center;}
+.quiz-btn{
+    background:var(--txt-accent);
+    color:#23232b;
+    font-weight:700;
+    font-size:1.08rem;
+    border-radius:10px;
+    letter-spacing:1px;
+    border:none;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    padding:.7rem 2.2rem;
+    margin-top:.7rem;
+    transition:background .2s,color .2s;
+}
+.quiz-btn:hover{background:#ffb347;color:#23232b;}
+@media(max-width:600px){
+    .quiz-result-card{padding:1.2rem .5rem 1rem;max-width:98vw;}
+    .quiz-result-title{font-size:1.3rem;}
+    .quiz-result-table th,.quiz-result-table td{font-size:.98rem;padding:.4rem .2rem;}
+    .quiz-btn{font-size:1rem;padding:.6rem 1.2rem;}
+}
+</style>
+{% endblock %}
+{% block content %}
+<section class="d-flex justify-content-center align-items-center" style="min-height:90vh;">
+    <div class="quiz-result-card">
+        <h1 class="quiz-result-title">Quiz Sonucu</h1>
+        <table class="quiz-result-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Soru</th>
+                    <th>Senin Cevabın</th>
+                    <th>Doğru Cevap</th>
+                    <th>Durum</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in results %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ r.question }}</td>
+                    <td>{{ r.user_answer if r.user_answer else '-' }}</td>
+                    <td>{{ r.correct_answer }}</td>
+                    <td>
+                        {% if r.status == 'doğru' %}
+                            <span class="quiz-status success">Doğru</span>
+                        {% elif r.status == 'yanlış' %}
+                            <span class="quiz-status danger">Yanlış</span>
+                        {% else %}
+                            <span class="quiz-status empty">Boş</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="quiz-btn-row">
+            <a href="/dashboard" class="quiz-btn">Ana Sayfaya Dön</a>
+        </div>
+    </div>
+</section>
+{% endblock %} 

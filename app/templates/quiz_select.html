@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="section full-height d-flex align-items-center justify-content-center" style="min-height: 90vh;">
+    <div class="card-3d-wrap mx-auto" style="max-width: 400px;">
+        <div class="card-3d-wrapper">
+            <div class="card-front">
+                <div class="center-wrap">
+                    <h2 class="mb-4 text-center" style="color: #ffeba7; letter-spacing: 1px;">Quiz Modu Seçimi</h2>
+                    <form id="quizTypeForm" method="GET" action="/quiz">
+                        <input type="hidden" name="mode" id="quizModeInput" value="">
+                        <button type="button" class="btn btn-lg w-100 mb-3" style="background: #ffeba7; color: #102770; font-weight: 600;" onclick="selectQuizMode('tr')">Sadece Türkçe</button>
+                        <button type="button" class="btn btn-lg w-100 mb-3" style="background: #ffeba7; color: #102770; font-weight: 600;" onclick="selectQuizMode('en')">Sadece İngilizce</button>
+                        <button type="button" class="btn btn-lg w-100 mb-3" style="background: #102770; color: #ffeba7; font-weight: 600;" onclick="selectQuizMode('mixed')">Karışık</button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="/start_work" class="btn btn-secondary">Geri Dön</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function selectQuizMode(mode) {
+    document.getElementById('quizModeInput').value = mode;
+    document.getElementById('quizTypeForm').submit();
+}
+</script>
+{% endblock %} 

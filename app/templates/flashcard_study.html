@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}{{ flashcard.name }} - Çalışma{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Footer gizle - tam ekran çalışma modu için */
+footer {
+    display: none !important;
+}
+
+/* Body padding ayarı */
+body {
+    padding-bottom: 0 !important;
+}
+
+/* Ana container yükseklik ayarı */
+.main-study-container {
+    min-height: 100vh;
+    padding-bottom: 2rem; /* Alt kısım için boşluk */
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-3 pt-2 main-study-container">
+    <!-- Header Section -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/add-flashcard" class="text-decoration-none">Flashcard'larım</a></li>
+                    <li class="breadcrumb-item"><a href="/flashcard/{{ flashcard.id }}/detail" class="text-decoration-none">{{ flashcard.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Çalışma</li>
+                </ol>
+            </nav>
+            <h1 class="display-5 fw-bold mb-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                <i class="fas fa-graduation-cap me-3"></i>{{ flashcard.name }} - Çalışma
+            </h1>
+            <p class="text-muted fs-5 mb-0">Çalışma modunuzu seçin ve öğrenmeye başlayın</p>
+        </div>
+    </div>
+
+    <!-- Flashcard Info Card -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-layer-group fa-2x text-white"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1 fw-bold">{{ flashcard.name }}</h5>
+                                    <p class="text-muted mb-0">{{ flashcard.description or "Açıklama yok" }}</p>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <span class="badge bg-primary">{{ flashcard.front_language|upper }}</span>
+                                        <i class="fas fa-arrow-right text-muted"></i>
+                                        <span class="badge bg-success">{{ flashcard.back_language|upper }}</span>
+                                        {% if flashcard.category %}
+                                        <span class="badge bg-light text-dark">{{ flashcard.category|title }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="row text-center g-2">
+                                <div class="col-4">
+                                    <div class="p-2" style="background-color: white; border-radius: 8px;">
+                                        <h6 class="mb-0 fw-bold text-primary">{{ total_words }}</h6>
+                                        <small class="text-muted">Toplam</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2" style="background-color: white; border-radius: 8px;">
+                                        <h6 class="mb-0 fw-bold text-success">{{ mastered_words }}</h6>
+                                        <small class="text-muted">Öğrenilen</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2" style="background-color: white; border-radius: 8px;">
+                                        <h6 class="mb-0 fw-bold text-warning">{{ learning_words }}</h6>
+                                        <small class="text-muted">Öğreniliyor</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Study Mode Selection -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold mb-2">Çalışma Modunu Seçin</h3>
+                <p class="text-muted">Her mod farklı öğrenme tarzlarını destekler. Size en uygun olanı seçin.</p>
+            </div>
+
+            <div class="row g-4 mb-3">
+                <!-- Flashcard Mode -->
+                <div class="col-md-4">
+                    <div class="card study-mode-card h-100 border-0 shadow-sm" style="border-radius: 20px; cursor: pointer;" onclick="selectStudyMode('flashcard')">
+                        <div class="card-body p-4 text-center">
+                            <div class="study-mode-icon mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                <i class="fas fa-layer-group fa-2x text-white"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Flashcard Çalışması</h5>
+                            <p class="text-muted mb-3">Klasik flashcard yöntemi ile kelimelerinizi gözden geçirin.</p>
+                            <ul class="list-unstyled text-start mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Kelimeyi görüp anlamını tahmin edin</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Öğrenilen/öğrenilmeyen olarak işaretleyin</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Hızlı tekrar imkanı</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Kişisel tempoda çalışma</li>
+                            </ul>
+                            <span class="badge bg-primary">Tavsiye Edilen</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Mode -->
+                <div class="col-md-4">
+                    <div class="card study-mode-card h-100 border-0 shadow-sm" style="border-radius: 20px; cursor: pointer;" onclick="selectStudyMode('quiz')">
+                        <div class="card-body p-4 text-center">
+                            <div class="study-mode-icon mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                <i class="fas fa-question-circle fa-2x text-white"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Quiz Modu</h5>
+                            <p class="text-muted mb-3">Çoktan seçmeli sorularla kendinizi test edin.</p>
+                            <ul class="list-unstyled text-start mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>4 seçenekli sorular</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Anında geri bildirim</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Skor takibi</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Hızlı değerlendirme</li>
+                            </ul>
+                            <span class="badge bg-success">Eğlenceli</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Writing Mode -->
+                <div class="col-md-4">
+                    <div class="card study-mode-card h-100 border-0 shadow-sm" style="border-radius: 20px; cursor: pointer;" onclick="selectStudyMode('writing')">
+                        <div class="card-body p-4 text-center">
+                            <div class="study-mode-icon mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                <i class="fas fa-pen fa-2x text-white"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Yazma Modu</h5>
+                            <p class="text-muted mb-3">Kelimeyi yazarak daha derin öğrenme sağlayın.</p>
+                            <ul class="list-unstyled text-start mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Aktif hatırlama yöntemi</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Yazım pratiği</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Derin öğrenme</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Akıllı değerlendirme</li>
+                            </ul>
+                            <span class="badge" style="background-color: #f093fb; color: white;">Zorlu</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-3 mt-2">
+                <button class="btn btn-lg px-5 py-3 text-white shadow-lg study-start-btn" id="startStudyBtn" disabled
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 15px; min-width: 250px; position: relative; overflow: hidden;">
+                    <span class="btn-content">
+                        <i class="fas fa-play me-2"></i>
+                        <span class="btn-text">Çalışmaya Başla</span>
+                    </span>
+                    <div class="btn-shine"></div>
+                </button>
+                
+                <a href="/flashcard/{{ flashcard.id }}/detail" 
+                   class="btn btn-light btn-lg px-5 py-3 shadow-sm back-btn"
+                   style="border-radius: 15px; min-width: 200px; border-width: 2px; transition: all 0.3s ease; color: #495057; border-color: #dee2e6;">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    <span>Geri Dön</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.study-mode-card {
+    transition: all 0.3s ease;
+}
+
+.study-mode-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+}
+
+.study-mode-card.selected {
+    border: 3px solid #667eea !important;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 50px rgba(102, 126, 234, 0.2) !important;
+}
+
+.study-mode-card.selected::before {
+    content: '✓';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #667eea;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Enhanced Button Styles */
+.study-start-btn {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.4s ease;
+    transform: translateY(0);
+}
+
+.study-start-btn:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4) !important;
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+}
+
+.study-start-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%) !important;
+}
+
+.study-start-btn .btn-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.study-start-btn .btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s;
+}
+
+.study-start-btn:not(:disabled):hover .btn-shine {
+    left: 100%;
+}
+
+.back-btn {
+    font-weight: 500;
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    border-color: #dee2e6 !important;
+}
+
+.back-btn:hover {
+    background-color: #e9ecef !important;
+    border-color: #adb5bd !important;
+    color: #212529 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+
+
+@media (max-width: 768px) {
+    .study-mode-card {
+        margin-bottom: 1rem;
+    }
+    
+    .study-start-btn, .back-btn {
+        min-width: 100% !important;
+        margin-bottom: 1rem;
+    }
+    
+    .d-flex.flex-md-row {
+        width: 100%;
+    }
+    
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let selectedMode = null;
+    const startBtn = document.getElementById('startStudyBtn');
+    
+    window.selectStudyMode = function(mode) {
+        // Remove selected class from all cards
+        document.querySelectorAll('.study-mode-card').forEach(card => {
+            card.classList.remove('selected');
+            card.style.position = 'static';
+        });
+        
+        // Add selected class to clicked card
+        event.currentTarget.classList.add('selected');
+        event.currentTarget.style.position = 'relative';
+        
+        selectedMode = mode;
+        
+        // Update button text based on selected mode
+        const buttonTexts = {
+            'flashcard': {
+                icon: 'fas fa-layer-group',
+                text: 'Flashcard Çalışmasına Başla'
+            },
+            'quiz': {
+                icon: 'fas fa-question-circle',
+                text: 'Quiz\'e Başla'
+            },
+            'writing': {
+                icon: 'fas fa-pen',
+                text: 'Yazma Moduna Başla'
+            }
+        };
+        
+        const btnContent = startBtn.querySelector('.btn-content');
+        btnContent.innerHTML = `
+            <i class="${buttonTexts[mode].icon} me-2"></i>
+            <span class="btn-text">${buttonTexts[mode].text}</span>
+        `;
+        
+        startBtn.disabled = false;
+        
+        // Smooth scroll to button
+        startBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    
+    startBtn.addEventListener('click', function() {
+        if (!selectedMode) {
+            alert('Lütfen bir çalışma modu seçin.');
+            return;
+        }
+        
+        const flashcardId = {{ flashcard.id }};
+        
+        // Redirect to language selection page with selected mode
+        window.location.href = `/flashcard/${flashcardId}/study/language-select?mode=${selectedMode}`;
+    });
+    
+    // Check if flashcard has words
+    const totalWords = {{ total_words }};
+    if (totalWords === 0) {
+        document.querySelectorAll('.study-mode-card').forEach(card => {
+            card.style.opacity = '0.5';
+            card.style.cursor = 'not-allowed';
+            card.onclick = function() {
+                alert('Bu flashcard\'ta henüz kelime bulunmuyor. Önce kelime eklemeniz gerekiyor.');
+                return false;
+            };
+        });
+        
+        startBtn.disabled = true;
+        const btnContent = startBtn.querySelector('.btn-content');
+        btnContent.innerHTML = '<i class="fas fa-plus me-2"></i><span class="btn-text">Önce Kelime Ekleyin</span>';
+        startBtn.onclick = function() {
+            window.location.href = `/flashcard/{{ flashcard.id }}/words/add`;
+        };
+    }
+});
+</script>
+
+{% endblock %}

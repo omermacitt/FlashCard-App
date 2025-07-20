@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}{{ flashcard.name }} - Detaylar{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/add-flashcard" class="text-decoration-none">Flashcard'larım</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ flashcard.name }}</li>
+                        </ol>
+                    </nav>
+                    <h1 class="display-5 fw-bold mb-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        <i class="fas fa-layer-group me-3"></i>{{ flashcard.name }}
+                    </h1>
+                    <p class="text-muted fs-5 mb-0">{{ flashcard.description or "Açıklama yok" }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="/flashcard/{{ flashcard.id }}/edit" class="btn btn-outline-primary btn-lg" style="border-radius: 12px;">
+                        <i class="fas fa-edit me-2"></i>Düzenle
+                    </a>
+                    <a href="/flashcard/{{ flashcard.id }}/words/add" class="btn btn-lg text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 12px;">
+                        <i class="fas fa-plus me-2"></i>Kelime Ekle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flashcard Info -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                {% if flashcard.visibility == 'public' %}
+                                <span class="badge rounded-pill" style="background-color: #10b981; padding: 8px 16px; font-size: 14px;">
+                                    <i class="fas fa-globe me-2"></i>Herkese Açık
+                                </span>
+                                {% else %}
+                                <span class="badge rounded-pill" style="background-color: #6b7280; padding: 8px 16px; font-size: 14px;">
+                                    <i class="fas fa-lock me-2"></i>Özel
+                                </span>
+                                {% endif %}
+                                {% if flashcard.category %}
+                                <span class="badge rounded-pill bg-light text-dark" style="padding: 8px 16px; font-size: 14px;">
+                                    {{ flashcard.category|title }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="p-3" style="background-color: #f8fafc; border-radius: 12px;">
+                                        <h3 class="mb-1 fw-bold text-primary">{{ total_words }}</h3>
+                                        <small class="text-muted">Toplam Kelime</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3" style="background-color: #f0fdf4; border-radius: 12px;">
+                                        <h3 class="mb-1 fw-bold text-success">{{ mastered_words }}</h3>
+                                        <small class="text-muted">Öğrenilen</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3" style="background-color: #fef3c7; border-radius: 12px;">
+                                        <h3 class="mb-1 fw-bold text-warning">{{ learning_words }}</h3>
+                                        <small class="text-muted">Öğreniliyor</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h6 class="text-muted mb-2">İlerleme</h6>
+                                {% if total_words > 0 %}
+                                <div class="progress" style="height: 12px; border-radius: 12px; background-color: #f3f4f6;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ (mastered_words / total_words * 100)|round|int }}%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);" 
+                                         aria-valuenow="{{ (mastered_words / total_words * 100)|round|int }}" 
+                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted mt-1">{{ (mastered_words / total_words * 100)|round|int }}% Tamamlandı</small>
+                                {% else %}
+                                <div class="progress" style="height: 12px; border-radius: 12px; background-color: #f3f4f6;">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted mt-1">Henüz kelime yok</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-center gap-3">
+                {% if total_words > 0 %}
+                <a href="/flashcard/{{ flashcard.id }}/study" class="btn btn-lg btn-primary" style="border-radius: 12px; padding: 12px 24px;">
+                    <i class="fas fa-graduation-cap me-2"></i>Çalışmaya Başla
+                </a>
+                {% else %}
+                <p class="text-muted text-center">Çalışmaya başlamak için önce kelime eklemeniz gerekiyor.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Words List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-header border-0 bg-white" style="border-radius: 16px 16px 0 0;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-list me-2" style="color: #667eea;"></i>Kelimeler ({{ total_words }})
+                        </h5>
+                        {% if total_words > 0 %}
+                        <div class="d-flex gap-2">
+                            <div class="input-group" style="max-width: 300px;">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0" placeholder="Kelime ara..." id="searchWords">
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if words %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="border-0 px-4 py-3">Kelime</th>
+                                    <th class="border-0 px-4 py-3">Anlamı</th>
+                                    <th class="border-0 px-4 py-3">Zorluk</th>
+                                    <th class="border-0 px-4 py-3">Durum</th>
+                                    <th class="border-0 px-4 py-3">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for word in words %}
+                                <tr class="word-row" data-word="{{ word.word.lower() }}">
+                                    <td class="px-4 py-3">
+                                        <div class="d-flex align-items-center">
+                                            <span class="fw-semibold">{{ word.word }}</span>
+                                            <small class="text-muted ms-2">{{ word.front_language|upper }}</small>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="d-flex align-items-center">
+                                            <span>{{ word.answer }}</span>
+                                            <small class="text-muted ms-2">{{ word.back_language|upper }}</small>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        {% if word.difficulty == 'easy' %}
+                                        <span class="badge bg-success">Kolay</span>
+                                        {% elif word.difficulty == 'medium' %}
+                                        <span class="badge bg-warning">Orta</span>
+                                        {% elif word.difficulty == 'hard' %}
+                                        <span class="badge bg-danger">Zor</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        {% if word.progress and word.progress.is_learned %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Öğrenildi
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>Öğreniliyor
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="d-flex gap-1">
+                                            {% if word.progress and word.progress.is_learned %}
+                                            <button class="btn btn-sm btn-outline-warning" onclick="markAsLearning({{ word.id }}, {{ flashcard.id }})" title="Öğreniliyor olarak işaretle">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                            {% else %}
+                                            <button class="btn btn-sm btn-outline-success" onclick="markAsLearned({{ word.id }}, {{ flashcard.id }})" title="Öğrenildi olarak işaretle">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            {% endif %}
+                                            <a href="/flashcard/{{ flashcard.id }}/detail/word/edit/{{ word.id }}" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="/flashcard/{{ flashcard.id }}/detail/word/delete/{{ word.id }}" class="btn btn-sm btn-outline-danger"
+                                               onclick="return confirm('Bu kelimeyi silmek istediğinizden emin misiniz?')" title="Sil">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <!-- Empty State -->
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                <i class="fas fa-book-open" style="font-size: 48px; color: #667eea; opacity: 0.7;"></i>
+                            </div>
+                        </div>
+                        <h4 class="mb-2 fw-bold">Henüz kelime eklenmemiş</h4>
+                        <p class="text-muted mb-4">Bu flashcard'a kelimeler ekleyerek çalışmaya başlayabilirsiniz.</p>
+                        <a href="/flashcard/{{ flashcard.id }}/words/add" class="btn btn-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 12px;">
+                            <i class="fas fa-plus me-2"></i>İlk Kelimeyi Ekle
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchWords');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const wordRows = document.querySelectorAll('.word-row');
+            
+            wordRows.forEach(row => {
+                const word = row.dataset.word;
+                if (word.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+
+function markAsLearned(wordId, flashcardId) {
+    fetch(`/flashcard/${flashcardId}/word/${wordId}/mark-learned`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();
+        } else {
+            alert('Bir hata oluştu!');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu!');
+    });
+}
+
+function markAsLearning(wordId, flashcardId) {
+    fetch(`/flashcard/${flashcardId}/word/${wordId}/mark-learning`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();
+        } else {
+            alert('Bir hata oluştu!');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu!');
+    });
+}
+</script>
+
+{% endblock %}

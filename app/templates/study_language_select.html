@@ -1,0 +1,566 @@
+{% extends "base.html" %}
+
+{% block title %}{{ flashcard.name }} - Dil Seçimi{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Footer gizle - tam ekran çalışma modu için */
+footer {
+    display: none !important;
+}
+
+/* Body padding ayarı */
+body {
+    padding-bottom: 0 !important;
+}
+
+/* Ana container yükseklik ayarı */
+.main-study-container {
+    min-height: 100vh;
+    padding-bottom: 4rem;
+}
+
+/* Language Selection Styles */
+.language-option-card {
+    transition: all 0.3s ease;
+    position: relative;
+    border: 2px solid #e9ecef;
+    border-radius: 20px;
+    cursor: pointer;
+    background: white;
+    overflow: hidden;
+}
+
+.language-option-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.language-option-card.selected {
+    border-color: #667eea !important;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6f3ff 100%) !important;
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(102, 126, 234, 0.25);
+}
+
+.language-option-card.selected::before {
+    content: '✓';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #667eea;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    z-index: 10;
+}
+
+.language-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2.5rem;
+    transition: all 0.3s ease;
+}
+
+.tr-to-en .language-icon {
+    background: linear-gradient(135deg, #dc3545 0%, #0d6efd 100%);
+}
+
+.en-to-tr .language-icon {
+    background: linear-gradient(135deg, #0d6efd 0%, #dc3545 100%);
+}
+
+.mixed .language-icon {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.language-option-card:hover .language-icon {
+    transform: scale(1.1);
+}
+
+.language-option-card.selected .language-icon {
+    transform: scale(1.1);
+}
+
+.mode-info-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    border: none;
+}
+
+.mode-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.flashcard-mode .mode-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.quiz-mode .mode-icon {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.writing-mode .mode-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* Enhanced Button Styles */
+.study-start-btn {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.4s ease;
+    transform: translateY(0);
+    position: relative;
+    overflow: hidden;
+}
+
+.study-start-btn:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4) !important;
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+}
+
+.study-start-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%) !important;
+}
+
+.study-start-btn .btn-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.study-start-btn .btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s;
+}
+
+.study-start-btn:not(:disabled):hover .btn-shine {
+    left: 100%;
+}
+
+.back-btn {
+    font-weight: 500;
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    border-color: #dee2e6 !important;
+}
+
+.back-btn:hover {
+    background-color: #e9ecef !important;
+    border-color: #adb5bd !important;
+    color: #212529 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Filter Selection Styles */
+.filter-option-card {
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    cursor: pointer;
+    background: white;
+}
+
+.filter-option-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.filter-option-card.selected {
+    border-color: #667eea !important;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6f3ff 100%) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.25);
+}
+
+/* Fade in animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@media (max-width: 768px) {
+    .language-option-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .study-start-btn, .back-btn {
+        min-width: 100% !important;
+        margin-bottom: 1rem;
+    }
+    
+    .d-flex.flex-md-row {
+        width: 100%;
+    }
+    
+    .language-icon {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4 main-study-container">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/add-flashcard" class="text-decoration-none">Flashcard'larım</a></li>
+                    <li class="breadcrumb-item"><a href="/flashcard/{{ flashcard.id }}/detail" class="text-decoration-none">{{ flashcard.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="/flashcard/{{ flashcard.id }}/study" class="text-decoration-none">Çalışma</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Dil Seçimi</li>
+                </ol>
+            </nav>
+            <h1 class="display-5 fw-bold mb-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                <i class="fas fa-language me-3"></i>Çalışma Dilini Seçin
+            </h1>
+            <p class="text-muted fs-5 mb-0">Hangi dilden hangi dile doğru çalışmak istiyorsunuz?</p>
+        </div>
+    </div>
+
+    <!-- Selected Mode Info -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card mode-info-card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <div class="mode-icon {{ mode }}-mode">
+                                {% if mode == 'flashcard' %}
+                                    <i class="fas fa-layer-group fa-2x text-white"></i>
+                                {% elif mode == 'quiz' %}
+                                    <i class="fas fa-question-circle fa-2x text-white"></i>
+                                {% elif mode == 'writing' %}
+                                    <i class="fas fa-pen fa-2x text-white"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="fw-bold mb-2">
+                                {% if mode == 'flashcard' %}
+                                    Flashcard Çalışması
+                                {% elif mode == 'quiz' %}
+                                    Quiz Modu
+                                {% elif mode == 'writing' %}
+                                    Yazma Modu
+                                {% endif %}
+                            </h5>
+                            <p class="text-muted mb-0">
+                                {% if mode == 'flashcard' %}
+                                    Klasik flashcard yöntemi ile kelimelerinizi gözden geçirin ve öğrenme durumunuzu işaretleyin.
+                                {% elif mode == 'quiz' %}
+                                    Çoktan seçmeli sorularla kendinizi test edin ve anında geri bildirim alın.
+                                {% elif mode == 'writing' %}
+                                    Kelimeyi yazarak daha derin öğrenme sağlayın ve yazım pratiği yapın.
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <div class="small text-muted">
+                                <i class="fas fa-layer-group me-1"></i>{{ flashcard.name }}<br>
+                                <i class="fas fa-spell-check me-1"></i>{{ total_words }} kelime<br>
+                                <i class="fas fa-check-circle me-1 text-success"></i>{{ mastered_words }} öğrenildi<br>
+                                <i class="fas fa-clock me-1 text-warning"></i>{{ learning_words }} öğreniliyor
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Word Filter Selection -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3 text-center">
+                        <i class="fas fa-filter me-2" style="color: #667eea;"></i>Hangi kelimeleri çalışmak istiyorsunuz?
+                    </h5>
+                    <div class="row g-3">
+                        <!-- Tüm Kelimeler -->
+                        <div class="col-md-4">
+                            <div class="filter-option-card h-100 p-3 text-center" onclick="selectWordFilter('all')" data-filter="all">
+                                <div class="filter-icon mb-2">
+                                    <i class="fas fa-list fa-2x" style="color: #667eea;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-2">Tüm Kelimeler</h6>
+                                <p class="text-muted small mb-2">Bütün kelimeleri çalışın</p>
+                                <span class="badge bg-primary">{{ total_words }} kelime</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Öğrenilmeyen Kelimeler -->
+                        <div class="col-md-4">
+                            <div class="filter-option-card h-100 p-3 text-center" onclick="selectWordFilter('not_learned')" data-filter="not_learned">
+                                <div class="filter-icon mb-2">
+                                    <i class="fas fa-clock fa-2x" style="color: #ffc107;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-2">Öğrenilmeyen Kelimeler</h6>
+                                <p class="text-muted small mb-2">Henüz öğrenmediğiniz kelimeler</p>
+                                <span class="badge bg-warning">{{ learning_words }} kelime</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Öğrenilen Kelimeler -->
+                        <div class="col-md-4">
+                            <div class="filter-option-card h-100 p-3 text-center" onclick="selectWordFilter('learned')" data-filter="learned">
+                                <div class="filter-icon mb-2">
+                                    <i class="fas fa-check-circle fa-2x" style="color: #28a745;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-2">Öğrenilen Kelimeler</h6>
+                                <p class="text-muted small mb-2">Tekrar etmek için</p>
+                                <span class="badge bg-success">{{ mastered_words }} kelime</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Selection -->
+    <div class="row justify-content-center fade-in-up">
+        <div class="col-lg-10">
+            <div class="row g-4 mb-5">
+                <!-- Turkish to English -->
+                <div class="col-md-4">
+                    <div class="language-option-card h-100 p-4 text-center tr-to-en" onclick="selectLanguageMode('tr_to_en')">
+                        <div class="language-icon">
+                            <span style="font-size: 1.5rem;">🇹🇷➔🇬🇧</span>
+                        </div>
+                        <h5 class="fw-bold mb-3">Türkçe → İngilizce</h5>
+                        <p class="text-muted mb-3">Türkçe kelimeyi görüp İngilizce anlamını bulun</p>
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            <span class="badge bg-danger">{{ flashcard.front_language|upper if flashcard.front_language == 'tr' else flashcard.back_language|upper }}</span>
+                            <i class="fas fa-arrow-right text-muted"></i>
+                            <span class="badge bg-primary">{{ flashcard.back_language|upper if flashcard.back_language == 'en' else flashcard.front_language|upper }}</span>
+                        </div>
+                        <small class="text-muted">Klasik öğrenme yöntemi</small>
+                    </div>
+                </div>
+
+                <!-- English to Turkish -->
+                <div class="col-md-4">
+                    <div class="language-option-card h-100 p-4 text-center en-to-tr" onclick="selectLanguageMode('en_to_tr')">
+                        <div class="language-icon">
+                            <span style="font-size: 1.5rem;">🇬🇧➔🇹🇷</span>
+                        </div>
+                        <h5 class="fw-bold mb-3">İngilizce → Türkçe</h5>
+                        <p class="text-muted mb-3">İngilizce kelimeyi görüp Türkçe anlamını bulun</p>
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            <span class="badge bg-primary">{{ flashcard.back_language|upper if flashcard.back_language == 'en' else flashcard.front_language|upper }}</span>
+                            <i class="fas fa-arrow-right text-muted"></i>
+                            <span class="badge bg-danger">{{ flashcard.front_language|upper if flashcard.front_language == 'tr' else flashcard.back_language|upper }}</span>
+                        </div>
+                        <small class="text-muted">Ters çeviri pratiği</small>
+                    </div>
+                </div>
+
+                <!-- Mixed Mode -->
+                <div class="col-md-4">
+                    <div class="language-option-card h-100 p-4 text-center mixed" onclick="selectLanguageMode('mixed')">
+                        <div class="language-icon">
+                            <span style="font-size: 1.5rem;">🔀</span>
+                        </div>
+                        <h5 class="fw-bold mb-3">Karışık Mod</h5>
+                        <p class="text-muted mb-3">Her iki yönde de rastgele çalışın</p>
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            <span class="badge bg-warning">🔀 KARIŞ</span>
+                        </div>
+                        <small class="text-muted">Maksimum öğrenme için zorlayıcı</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-3 mt-4">
+                <button class="btn btn-lg px-5 py-3 text-white shadow-lg study-start-btn" id="startStudyBtn" disabled
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 15px; min-width: 250px; position: relative; overflow: hidden;">
+                    <span class="btn-content">
+                        <i class="fas fa-play me-2"></i>
+                        <span class="btn-text">Seçimlerinizi Yapın</span>
+                    </span>
+                    <div class="btn-shine"></div>
+                </button>
+                
+                <a href="/flashcard/{{ flashcard.id }}/study" 
+                   class="btn btn-light btn-lg px-5 py-3 shadow-sm back-btn"
+                   style="border-radius: 15px; min-width: 200px; border-width: 2px; transition: all 0.3s ease; color: #495057; border-color: #dee2e6;">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    <span>Geri Dön</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let selectedLanguageMode = null;
+    let selectedWordFilter = null;
+    const startBtn = document.getElementById('startStudyBtn');
+    const mode = '{{ mode }}';
+    const flashcardId = {{ flashcard.id }};
+    
+    window.selectLanguageMode = function(langMode) {
+        // Remove selected class from all language cards
+        document.querySelectorAll('.language-option-card').forEach(card => {
+            card.classList.remove('selected');
+            card.style.position = 'static';
+        });
+        
+        // Add selected class to clicked language card
+        event.currentTarget.classList.add('selected');
+        event.currentTarget.style.position = 'relative';
+        
+        selectedLanguageMode = langMode;
+        updateButtonState();
+    };
+    
+    window.selectWordFilter = function(filterType) {
+        // Remove selected class from all filter cards
+        document.querySelectorAll('.filter-option-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked filter card
+        event.currentTarget.classList.add('selected');
+        
+        selectedWordFilter = filterType;
+        updateButtonState();
+    };
+    
+    function updateButtonState() {
+        const langTexts = {
+            'tr_to_en': 'Türkçe → İngilizce',
+            'en_to_tr': 'İngilizce → Türkçe',
+            'mixed': 'Karışık Mod'
+        };
+        
+        const filterTexts = {
+            'all': 'Tüm Kelimeler',
+            'learned': 'Öğrenilen Kelimeler',
+            'not_learned': 'Öğrenilmeyen Kelimeler'
+        };
+        
+        const modeIcons = {
+            'flashcard': 'fas fa-layer-group',
+            'quiz': 'fas fa-question-circle',
+            'writing': 'fas fa-pen'
+        };
+        
+        const btnContent = startBtn.querySelector('.btn-content');
+        
+        if (selectedLanguageMode && selectedWordFilter) {
+            btnContent.innerHTML = `
+                <i class="${modeIcons[mode]} me-2"></i>
+                <span class="btn-text">${langTexts[selectedLanguageMode]} - ${filterTexts[selectedWordFilter]}</span>
+            `;
+            startBtn.disabled = false;
+        } else if (selectedLanguageMode && !selectedWordFilter) {
+            btnContent.innerHTML = `
+                <i class="fas fa-filter me-2"></i>
+                <span class="btn-text">Kelime Filtresi Seçin</span>
+            `;
+            startBtn.disabled = true;
+        } else if (!selectedLanguageMode && selectedWordFilter) {
+            btnContent.innerHTML = `
+                <i class="fas fa-language me-2"></i>
+                <span class="btn-text">Dil Modu Seçin</span>
+            `;
+            startBtn.disabled = true;
+        } else {
+            btnContent.innerHTML = `
+                <i class="fas fa-play me-2"></i>
+                <span class="btn-text">Seçimlerinizi Yapın</span>
+            `;
+            startBtn.disabled = true;
+        }
+    }
+    
+    startBtn.addEventListener('click', function() {
+        if (!selectedLanguageMode || !selectedWordFilter) {
+            alert('Lütfen dil modu ve kelime filtresi seçin.');
+            return;
+        }
+        
+        // Build final URL with mode, language, and filter parameters
+        const baseUrls = {
+            'flashcard': `/flashcard/${flashcardId}/study/flashcard`,
+            'quiz': `/flashcard/${flashcardId}/study/quiz`,
+            'writing': `/flashcard/${flashcardId}/study/writing`
+        };
+        
+        const url = `${baseUrls[mode]}?lang_mode=${selectedLanguageMode}&word_filter=${selectedWordFilter}`;
+        window.location.href = url;
+    });
+    
+    // Check if flashcard has words
+    const totalWords = {{ total_words }};
+    if (totalWords === 0) {
+        document.querySelectorAll('.language-option-card').forEach(card => {
+            card.style.opacity = '0.5';
+            card.style.cursor = 'not-allowed';
+            card.onclick = function() {
+                alert('Bu flashcard\'ta henüz kelime bulunmuyor. Önce kelime eklemeniz gerekiyor.');
+                return false;
+            };
+        });
+        
+        startBtn.disabled = true;
+        const btnContent = startBtn.querySelector('.btn-content');
+        btnContent.innerHTML = '<i class="fas fa-plus me-2"></i><span class="btn-text">Önce Kelime Ekleyin</span>';
+        startBtn.onclick = function() {
+            window.location.href = `/flashcard/${flashcardId}/words/add`;
+        };
+    }
+});
+</script>
+
+{% endblock %}

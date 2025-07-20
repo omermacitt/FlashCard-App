@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="section full-height d-flex align-items-center justify-content-center" style="min-height: 90vh;">
+    <div class="card-3d-wrap mx-auto" style="max-width: 500px;">
+        <div class="card-3d-wrapper">
+            <div class="card-front">
+                <div class="center-wrap">
+                    <h2 class="mb-4 text-center" style="color: #ffeba7; letter-spacing: 1px;">Yazma Alıştırması</h2>
+                    {% if word %}
+                        {% if show_result and result_message %}
+                            {% if 'Doğru' in result_message %}
+                                <div class="mb-4 text-center">
+                                    <span class="word" style="font-size: 2.2rem; font-weight: 700; color: #fff; letter-spacing: 2px;">{{ word }}</span>
+                                </div>
+                                <div class="alert text-center mb-3" style="color: #fff; background: #28a745; border-radius: 8px; font-weight: 600;">
+                                    {{ result_message }}
+                                </div>
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-primary" id="next-question-btn" style="background: #ffeba7; color: #102770; font-weight: 600; letter-spacing: 1px;">Sonraki Soru</button>
+                                </div>
+                                <script>
+                                    document.getElementById('next-question-btn').onclick = function() {
+                                        window.location.href = window.location.pathname;
+                                    };
+                                </script>
+                            {% else %}
+                                <div class="alert text-center mb-3" style="color: #fff; background: #dc3545; border-radius: 8px; font-weight: 600;">
+                                    {{ result_message }}
+                                </div>
+                                <form method="POST" action="">
+                                    <div class="mb-4 text-center">
+                                        <span class="word" style="font-size: 2.2rem; font-weight: 700; color: #fff; letter-spacing: 2px;">{{ word }}</span>
+                                    </div>
+                                    <div class="form-group mb-4 position-relative">
+                                        <span class="input-icon"><i class="fa fa-pencil"></i></span>
+                                        <input type="text" class="form-style" id="answer" name="answer" placeholder="Cevabınızı yazın" autocomplete="off" required autofocus>
+                                    </div>
+                                    <button type="submit" class="btn w-100" style="background: #ffeba7; color: #102770; font-weight: 600; letter-spacing: 1px;">Gönder</button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <form method="POST" action="">
+                                <div class="mb-4 text-center">
+                                    <span class="word" style="font-size: 2.2rem; font-weight: 700; color: #fff; letter-spacing: 2px;">{{ word }}</span>
+                                </div>
+                                <div class="form-group mb-4 position-relative">
+                                    <span class="input-icon"><i class="fa fa-pencil"></i></span>
+                                    <input type="text" class="form-style" id="answer" name="answer" placeholder="Cevabınızı yazın" autocomplete="off" required autofocus>
+                                </div>
+                                <button type="submit" class="btn w-100" style="background: #ffeba7; color: #102770; font-weight: 600; letter-spacing: 1px;">Gönder</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        {% if kelime_yok %}
+                        <div class="text-center mt-4">
+                            <p style="color: #ffeba7; font-size: 1.2rem; font-weight: 600;">Henüz hiç kelimeniz yok.<br>Kelime ekleyerek başlayabilirsiniz.</p>
+                            <a href="/add-word" class="btn btn-primary mt-3">Kelime Ekle</a>
+                        </div>
+                        {% else %}
+                        <div class="text-center mt-4">
+                            <p style="color: #ffeba7; font-size: 1.2rem; font-weight: 600;">Tebrikler! Tüm kelimeleri tamamladınız 🎉</p>
+                            <a href="/dashboard" class="btn btn-primary mt-3">Ana Sayfaya Dön</a>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- FontAwesome CDN for pencil icon -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %} 

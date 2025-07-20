@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% block title %}Yazma Modu Seçimi{% endblock %}
+
+{% block extra_css %}
+<style>
+.mode-selection-container {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+}
+.mode-selection-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+.mode-selection-header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #ffeba7;
+    margin-bottom: 1rem;
+}
+.mode-selection-header p {
+    font-size: 1.1rem;
+    color: #c4c3ca;
+    max-width: 600px;
+    margin: 0 auto;
+}
+.mode-cards {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.mode-card {
+    background: #2a2b38;
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-width: 280px;
+    max-width: 340px;
+    color: #fff;
+}
+.mode-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 48px rgba(255,235,167,0.15);
+    border-color: #ffeba7;
+}
+.mode-card.selected {
+    border-color: #ffeba7;
+    border-width: 3px;
+    background: linear-gradient(135deg, #2a2b38 0%, #23232b 100%);
+    box-shadow: 0 12px 40px rgba(255,235,167,0.15);
+    transform: translateY(-4px);
+    position: relative;
+}
+.mode-card.selected h3 {
+    color: #ffeba7;
+}
+.mode-card-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: #102770;
+    background: #ffeba7;
+}
+.mode-card h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 1rem;
+}
+.mode-card p {
+    color: #c4c3ca;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+@media (max-width: 768px) {
+    .mode-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+    .mode-card {
+        min-width: 260px;
+    }
+    .mode-selection-header h1 {
+        font-size: 1.5rem;
+    }
+}
+.start-btn {
+    background: linear-gradient(135deg, #ffeba7 0%, #ff8c42 100%);
+    border: none;
+    color: #23232b;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 0.8rem 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(255,235,167,0.2);
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+.start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,235,167,0.3);
+    color: #23232b;
+}
+.start-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mode-selection-container">
+    <div class="mode-selection-header">
+        <h1>Yazma Modunu Seçin</h1>
+        <p>Yazma alıştırması için iki farklı yöntemden birini seçebilirsiniz. Hangi yöntemin size daha uygun olduğuna karar verin!</p>
+    </div>
+    <form method="POST" action="">
+        <div class="mode-cards">
+            <div class="mode-card" id="stepCard" onclick="selectMode('step')">
+                <div class="mode-card-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3>Her Sorudan Sonra Anında Cevap</h3>
+                <p>Her kelime için cevabınızı yazdıktan hemen sonra doğru cevabı görebilirsiniz. Hızlı geri bildirim ve pekiştirme sağlar.</p>
+            </div>
+            <div class="mode-card" id="bulkCard" onclick="selectMode('bulk')">
+                <div class="mode-card-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <h3>Tüm Soruları Bitirince Toplu Cevap</h3>
+                <p>Tüm kelimeleri bir arada görüp cevaplayabilirsiniz. Sonuçları topluca görebilir, sınav havası yaşayabilirsiniz.</p>
+            </div>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn start-btn" id="startBtn" name="mode" value="" disabled>Başla</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedMode = null;
+function selectMode(mode) {
+    document.getElementById('stepCard').classList.remove('selected');
+    document.getElementById('bulkCard').classList.remove('selected');
+    if (mode === 'step') {
+        document.getElementById('stepCard').classList.add('selected');
+    } else if (mode === 'bulk') {
+        document.getElementById('bulkCard').classList.add('selected');
+    }
+    selectedMode = mode;
+    const startBtn = document.getElementById('startBtn');
+    startBtn.disabled = false;
+    startBtn.value = mode;
+}
+</script>
+<!-- FontAwesome CDN for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %} 

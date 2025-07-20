@@ -1,0 +1,481 @@
+{% extends "base.html" %}
+{% block title %}{{ word.word }} - Kelime Düzenle{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modern Edit Form Styles */
+.edit-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.word-edit-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    border: none;
+    overflow: hidden;
+}
+
+.card-header-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border: none;
+    text-align: center;
+}
+
+.form-section {
+    padding: 2rem;
+}
+
+.form-group-modern {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-label-modern {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-control-modern {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 15px 20px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.form-control-modern:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    outline: none;
+    background: white;
+}
+
+.form-select-modern {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 15px 20px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    cursor: pointer;
+}
+
+.form-select-modern:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    outline: none;
+    background: white;
+}
+
+.language-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.language-card {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.language-card.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.difficulty-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.difficulty-option {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.difficulty-option.active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+    transform: translateY(-2px);
+}
+
+.difficulty-easy { --color: #28a745; }
+.difficulty-medium { --color: #ffc107; }
+.difficulty-hard { --color: #dc3545; }
+
+.difficulty-option.active.difficulty-easy { background: #28a745; border-color: #28a745; }
+.difficulty-option.active.difficulty-medium { background: #ffc107; border-color: #ffc107; color: #000; }
+.difficulty-option.active.difficulty-hard { background: #dc3545; border-color: #dc3545; }
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary-custom {
+    background: #6c757d;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.btn-secondary-custom:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    color: white;
+}
+
+.word-preview {
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.word-preview-text {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.word-preview-translation {
+    font-size: 1.5rem;
+    color: #6c757d;
+}
+
+.language-badge {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.breadcrumb-modern {
+    background: none;
+    padding: 0;
+    margin-bottom: 2rem;
+}
+
+.breadcrumb-modern .breadcrumb-item a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.breadcrumb-modern .breadcrumb-item.active {
+    color: #6c757d;
+}
+
+@media (max-width: 768px) {
+    .language-selector {
+        grid-template-columns: 1fr;
+    }
+    
+    .difficulty-selector {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Include Navbar -->
+{% include 'navbar.html' %}
+
+<div class="container mt-5 pt-4">
+    <div class="edit-container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-modern">
+                <li class="breadcrumb-item"><a href="/add-flashcard">Flashcard'larım</a></li>
+                <li class="breadcrumb-item"><a href="/flashcard/{{ flashcard.id }}/detail">{{ flashcard.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Kelime Düzenle</li>
+            </ol>
+        </nav>
+
+        <!-- Main Edit Card -->
+        <div class="word-edit-card">
+            <!-- Header -->
+            <div class="card-header-custom">
+                <h1 class="h3 mb-2">
+                    <i class="fas fa-edit me-2"></i>Kelime Düzenle
+                </h1>
+                <p class="mb-0 opacity-90">{{ flashcard.name }} flashcard'ından kelime bilgilerini güncelle</p>
+            </div>
+
+            <!-- Form Content -->
+            <div class="form-section">
+                <!-- Word Preview -->
+                <div class="word-preview">
+                    <div class="word-preview-text" id="previewWord">{{ word.word }}</div>
+                    <div class="word-preview-translation" id="previewTranslation">{{ word.answer }}</div>
+                    <div class="mt-2">
+                        <span class="language-badge" id="previewFrontLang">
+                            {{ 'Türkçe' if word.front_language == 'tr' else 'İngilizce' }}
+                        </span>
+                        <i class="fas fa-arrow-right mx-2" style="color: #6c757d;"></i>
+                        <span class="language-badge" id="previewBackLang">
+                            {{ 'Türkçe' if word.back_language == 'tr' else 'İngilizce' }}
+                        </span>
+                    </div>
+                </div>
+
+                <form method="POST" id="editWordForm">
+                    <!-- Word Input -->
+                    <div class="form-group-modern">
+                        <label class="form-label-modern" for="frontWord">Kelime</label>
+                        <input type="text" 
+                               class="form-control form-control-modern" 
+                               id="frontWord"
+                               name="front_word" 
+                               value="{{ word.word }}" 
+                               required
+                               placeholder="Kelimeyi girin...">
+                    </div>
+
+                    <!-- Translation Input -->
+                    <div class="form-group-modern">
+                        <label class="form-label-modern" for="backWord">Çeviri / Karşılık</label>
+                        <input type="text" 
+                               class="form-control form-control-modern" 
+                               id="backWord"
+                               name="back_word" 
+                               value="{{ word.answer }}" 
+                               required
+                               placeholder="Çeviriyi girin...">
+                    </div>
+
+                    <!-- Language Selection -->
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">Dil Yönü</label>
+                        <div class="language-selector">
+                            <div class="language-card {{ 'active' if word.front_language == 'tr' else '' }}" 
+                                 data-front="tr" data-back="en">
+                                <i class="fas fa-flag fa-2x mb-2" style="color: #e74c3c;"></i>
+                                <h6 class="mb-1">Türkçe → İngilizce</h6>
+                                <small>Türkçe kelime, İngilizce çeviri</small>
+                            </div>
+                            <div class="language-card {{ 'active' if word.front_language == 'en' else '' }}" 
+                                 data-front="en" data-back="tr">
+                                <i class="fas fa-flag fa-2x mb-2" style="color: #3498db;"></i>
+                                <h6 class="mb-1">İngilizce → Türkçe</h6>
+                                <small>İngilizce kelime, Türkçe çeviri</small>
+                            </div>
+                        </div>
+                        <input type="hidden" name="front_language" id="frontLanguage" value="{{ word.front_language }}">
+                        <input type="hidden" name="back_language" id="backLanguage" value="{{ word.back_language }}">
+                    </div>
+
+                    <!-- Difficulty Selection -->
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">Zorluk Seviyesi</label>
+                        <div class="difficulty-selector">
+                            <div class="difficulty-option difficulty-easy {{ 'active' if word.difficulty == 'easy' or word.difficulty == 'kolay' else '' }}" 
+                                 data-difficulty="easy">
+                                <i class="fas fa-smile fa-lg mb-2"></i>
+                                <div>Kolay</div>
+                            </div>
+                            <div class="difficulty-option difficulty-medium {{ 'active' if word.difficulty == 'medium' or word.difficulty == 'orta' else '' }}" 
+                                 data-difficulty="medium">
+                                <i class="fas fa-meh fa-lg mb-2"></i>
+                                <div>Orta</div>
+                            </div>
+                            <div class="difficulty-option difficulty-hard {{ 'active' if word.difficulty == 'hard' or word.difficulty == 'zor' else '' }}" 
+                                 data-difficulty="hard">
+                                <i class="fas fa-frown fa-lg mb-2"></i>
+                                <div>Zor</div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="difficulty" id="difficultyInput" value="{{ word.difficulty }}">
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                        </button>
+                        <a href="/flashcard/{{ flashcard.id }}/detail" class="btn btn-secondary-custom">
+                            <i class="fas fa-arrow-left me-2"></i>İptal Et
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form elements
+    const frontWordInput = document.getElementById('frontWord');
+    const backWordInput = document.getElementById('backWord');
+    const frontLanguageInput = document.getElementById('frontLanguage');
+    const backLanguageInput = document.getElementById('backLanguage');
+    const difficultyInput = document.getElementById('difficultyInput');
+    
+    // Preview elements
+    const previewWord = document.getElementById('previewWord');
+    const previewTranslation = document.getElementById('previewTranslation');
+    const previewFrontLang = document.getElementById('previewFrontLang');
+    const previewBackLang = document.getElementById('previewBackLang');
+    
+    // Language cards
+    const languageCards = document.querySelectorAll('.language-card');
+    const difficultyOptions = document.querySelectorAll('.difficulty-option');
+    
+    // Update preview in real-time
+    function updatePreview() {
+        previewWord.textContent = frontWordInput.value || 'Kelime';
+        previewTranslation.textContent = backWordInput.value || 'Çeviri';
+        
+        const frontLang = frontLanguageInput.value;
+        const backLang = backLanguageInput.value;
+        
+        previewFrontLang.textContent = frontLang === 'tr' ? 'Türkçe' : 'İngilizce';
+        previewBackLang.textContent = backLang === 'tr' ? 'Türkçe' : 'İngilizce';
+    }
+    
+    // Language card selection
+    languageCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove active class from all cards
+            languageCards.forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked card
+            this.classList.add('active');
+            
+            // Update hidden inputs
+            frontLanguageInput.value = this.dataset.front;
+            backLanguageInput.value = this.dataset.back;
+            
+            // Update preview
+            updatePreview();
+        });
+    });
+    
+    // Difficulty selection
+    difficultyOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove active class from all options
+            difficultyOptions.forEach(o => o.classList.remove('active'));
+            
+            // Add active class to clicked option
+            this.classList.add('active');
+            
+            // Update hidden input
+            difficultyInput.value = this.dataset.difficulty;
+        });
+    });
+    
+    // Real-time preview updates
+    frontWordInput.addEventListener('input', updatePreview);
+    backWordInput.addEventListener('input', updatePreview);
+    
+    // Form validation
+    const form = document.getElementById('editWordForm');
+    form.addEventListener('submit', function(e) {
+        const frontWord = frontWordInput.value.trim();
+        const backWord = backWordInput.value.trim();
+        const difficulty = difficultyInput.value;
+        
+        if (!frontWord || !backWord) {
+            e.preventDefault();
+            alert('Lütfen tüm alanları doldurun!');
+            return false;
+        }
+        
+        if (!difficulty) {
+            e.preventDefault();
+            alert('Lütfen zorluk seviyesi seçin!');
+            return false;
+        }
+        
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Kaydediliyor...';
+        submitBtn.disabled = true;
+        
+        // Re-enable if form submission fails
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 5000);
+    });
+    
+    // Initialize preview
+    updatePreview();
+    
+    // Add smooth animations
+    const editCard = document.querySelector('.word-edit-card');
+    editCard.style.opacity = '0';
+    editCard.style.transform = 'translateY(30px)';
+    
+    setTimeout(() => {
+        editCard.style.transition = 'all 0.6s ease';
+        editCard.style.opacity = '1';
+        editCard.style.transform = 'translateY(0)';
+    }, 100);
+});
+</script>
+{% endblock %} 

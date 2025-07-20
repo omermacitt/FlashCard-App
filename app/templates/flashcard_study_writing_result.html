@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}{{ flashcard.name }} - Writing Sonuçları{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb justify-content-center">
+                    <li class="breadcrumb-item"><a href="/add-flashcard" class="text-decoration-none">Flashcard'larım</a></li>
+                    <li class="breadcrumb-item"><a href="/flashcard/{{ flashcard.id }}/detail" class="text-decoration-none">{{ flashcard.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="/flashcard/{{ flashcard.id }}/study" class="text-decoration-none">Çalışma</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Writing Sonuçları</li>
+                </ol>
+            </nav>
+            
+            <div class="mb-4">
+                {% if early_exit %}
+                <div class="mb-3">
+                    <i class="fas fa-info-circle fa-3x text-info"></i>
+                </div>
+                <h1 class="display-6 fw-bold mb-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Çalışma Sonlandırıldı
+                </h1>
+                <p class="text-muted">Writing çalışmanız erken sonlandırıldı. İlerlemeniz kaydedildi.</p>
+                {% else %}
+                <div class="mb-3">
+                    <i class="fas fa-trophy fa-3x text-warning"></i>
+                </div>
+                <h1 class="display-6 fw-bold mb-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Tebrikler!
+                </h1>
+                <p class="text-muted">Writing çalışmanızı tamamladınız!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-5">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card border-0 h-100" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 16px;">
+                <div class="card-body text-center text-white p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-check-circle fa-3x opacity-75"></i>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ correct_count }}</h2>
+                    <p class="mb-0 opacity-90">Doğru</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card border-0 h-100" style="background: linear-gradient(135deg, #F093FB 0%, #F5576C 100%); border-radius: 16px;">
+                <div class="card-body text-center text-white p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-times-circle fa-3x opacity-75"></i>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ wrong_count }}</h2>
+                    <p class="mb-0 opacity-90">Yanlış</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card border-0 h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px;">
+                <div class="card-body text-center text-white p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-list fa-3x opacity-75"></i>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ total_questions }}</h2>
+                    <p class="mb-0 opacity-90">Toplam</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card border-0 h-100" style="background: linear-gradient(135deg, #56CCF2 0%, #2F80ED 100%); border-radius: 16px;">
+                <div class="card-body text-center text-white p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-percentage fa-3x opacity-75"></i>
+                    </div>
+                    <h2 class="fw-bold mb-1">
+                        {% if total_questions > 0 %}
+                            {{ ((correct_count / total_questions) * 100)|round|int }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </h2>
+                    <p class="mb-0 opacity-90">Başarı</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    {% if total_questions > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-semibold">Genel Performans</h6>
+                        <span class="badge bg-primary px-3 py-2">
+                            {{ correct_count }}/{{ total_questions }} Doğru
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 12px; border-radius: 10px;">
+                        <div class="progress-bar bg-success" style="width: {{ ((correct_count / total_questions) * 100)|round|int }}%; border-radius: 10px;">
+                        </div>
+                    </div>
+                    <div class="mt-2 d-flex justify-content-between">
+                        <small class="text-muted">
+                            <i class="fas fa-check-circle text-success me-1"></i>
+                            {{ correct_count }} doğru cevap
+                        </small>
+                        <small class="text-muted">
+                            <i class="fas fa-times-circle text-danger me-1"></i>
+                            {{ wrong_count }} yanlış cevap
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Detailed Results -->
+    {% if results %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-header bg-white border-0 p-4" style="border-radius: 16px 16px 0 0;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-list-alt me-2" style="color: #667eea;"></i>
+                            Detaylı Sonuçlar
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-success" onclick="filterResults('correct')">
+                                <i class="fas fa-check me-1"></i>Doğrular
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="filterResults('incorrect')">
+                                <i class="fas fa-times me-1"></i>Yanlışlar
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="filterResults('all')">
+                                <i class="fas fa-list me-1"></i>Tümü
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">#</th>
+                                    <th>Soru</th>
+                                    <th>Cevabınız</th>
+                                    <th>Doğru Cevap</th>
+                                    <th class="text-center">Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in results %}
+                                <tr class="result-row" data-status="{{ 'correct' if result.is_correct else 'incorrect' }}">
+                                    <td class="ps-4 fw-semibold">{{ loop.index }}</td>
+                                    <td>
+                                        <span class="fw-semibold" style="color: #667eea;">{{ result.question }}</span>
+                                    </td>
+                                    <td>
+                                        {% if result.user_answer %}
+                                            <span class="{{ 'text-success fw-semibold' if result.is_correct else 'text-danger' }}">
+                                                {{ result.user_answer }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted fst-italic">Boş bırakıldı</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-semibold">{{ result.correct_answer }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if result.is_correct %}
+                                            <span class="badge bg-success px-3 py-2">
+                                                <i class="fas fa-check me-1"></i>Doğru
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger px-3 py-2">
+                                                <i class="fas fa-times me-1"></i>Yanlış
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <a href="/flashcard/{{ flashcard.id }}/study/writing?lang_mode={{ lang_mode }}" class="btn btn-lg text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 12px; padding: 12px 30px;">
+                    <i class="fas fa-redo me-2"></i>Tekrar Çalış
+                </a>
+                <a href="/flashcard/{{ flashcard.id }}/study" class="btn btn-outline-primary btn-lg" style="border-radius: 12px; padding: 12px 30px;">
+                    <i class="fas fa-graduation-cap me-2"></i>Çalışma Modları
+                </a>
+                <a href="/flashcard/{{ flashcard.id }}/detail" class="btn btn-outline-secondary btn-lg" style="border-radius: 12px; padding: 12px 30px;">
+                    <i class="fas fa-arrow-left me-2"></i>Flashcard'a Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.result-row.hide {
+    display: none !important;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.table td, .table th {
+    padding: 15px 12px;
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.85rem;
+}
+</style>
+
+<script>
+function filterResults(type) {
+    const rows = document.querySelectorAll('.result-row');
+    
+    rows.forEach(row => {
+        if (type === 'all') {
+            row.classList.remove('hide');
+        } else {
+            const status = row.getAttribute('data-status');
+            if (status === type) {
+                row.classList.remove('hide');
+            } else {
+                row.classList.add('hide');
+            }
+        }
+    });
+    
+    // Update button states
+    document.querySelectorAll('[onclick^="filterResults"]').forEach(btn => {
+        btn.classList.remove('btn-success', 'btn-danger', 'btn-secondary');
+        btn.classList.add('btn-outline-success', 'btn-outline-danger', 'btn-outline-secondary');
+    });
+    
+    const activeBtn = event.target.closest('button');
+    if (type === 'correct') {
+        activeBtn.classList.remove('btn-outline-success');
+        activeBtn.classList.add('btn-success');
+    } else if (type === 'incorrect') {
+        activeBtn.classList.remove('btn-outline-danger');
+        activeBtn.classList.add('btn-danger');
+    } else {
+        activeBtn.classList.remove('btn-outline-secondary');
+        activeBtn.classList.add('btn-secondary');
+    }
+}
+
+// Page animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate cards on load
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+
+{% endblock %}

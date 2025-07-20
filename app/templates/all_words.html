@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Bütün Kelimelerim{% endblock %}
+
+{% block extra_css %}
+<style>
+.all-words-table {
+    margin-top: 2.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container all-words-table">
+    <h2 class="mb-4 text-center">Bütün Kelimelerim</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Ön Yüz</th>
+                    <th>Ön Dil</th>
+                    <th>Arka Yüz</th>
+                    <th>Arka Dil</th>
+                    <th>Eklenme Tarihi</th>
+                    <th>Güncelleme Tarihi</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for word in all_words %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ word.word }}</td>
+                    <td>{{ word.front_language|capitalize }}</td>
+                    <td>{{ word.answer }}</td>
+                    <td>{{ word.back_language|capitalize }}</td>
+                    <td>
+                        {% if word.created_at %}
+                            {% if word.created_at.__class__.__name__ == 'str' %}
+                                {{ word.created_at[:19].replace('T', ' ') }}
+                            {% else %}
+                                {{ word.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if word.updated_at %}
+                            {% if word.updated_at.__class__.__name__ == 'str' %}
+                                {{ word.updated_at[:19].replace('T', ' ') }}
+                            {% else %}
+                                {{ word.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/edit-word?id={{ word.id }}" class="btn btn-sm btn-outline-primary me-1" title="Düzenle">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="/delete-word?id={{ word.id }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted">Hiç kelimeniz yok.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 

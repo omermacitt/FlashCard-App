@@ -1,0 +1,848 @@
+{% extends "base.html" %}
+{% block title %}{{ flashcard.name }} - Quiz{% endblock %}
+
+{% block extra_css %}
+<style>
+.quiz-container {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 1rem 0;
+}
+.quiz-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.quiz-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+.quiz-progress {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    background: #f8f9fa;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.quiz-progress .progress-text {
+    font-weight: 600;
+    color: #2c3e50;
+    min-width: 120px;
+}
+.quiz-progress .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.quiz-progress .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+.quiz-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 600px;
+}
+.quiz-nav-btn {
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.quiz-nav-btn:hover:not(:disabled) {
+    border-color: #667eea;
+    background: #667eea;
+    color: #fff;
+    transform: translateY(-2px);
+}
+.quiz-nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.quiz-question {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+}
+.quiz-question h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+.quiz-question .hint {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-bottom: 1rem;
+}
+.quiz-options {
+    display: grid;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+.quiz-options.desktop {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+.quiz-options.mobile {
+    grid-template-columns: 1fr;
+}
+.quiz-option {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2c3e50;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.quiz-option:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+.quiz-option.selected {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-color: #667eea;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+.quiz-option.answered {
+    background: #e9ecef;
+    border-color: #6c757d;
+    color: #6c757d;
+}
+.quiz-option.correct {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-color: #28a745;
+    color: #fff;
+}
+.quiz-option.incorrect {
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    border-color: #dc3545;
+    color: #fff;
+}
+.quiz-option .option-letter {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    opacity: 0.7;
+}
+.quiz-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+.quiz-actions .btn {
+    min-width: 140px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+}
+/* Quiz stats at top */
+.quiz-stats-top {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 0.8rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Action buttons container */
+.quiz-actions-container {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.quiz-stat {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    padding: 0.8rem 1rem;
+    min-width: 70px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.quiz-stat .stat-icon {
+    font-size: 1rem;
+    margin-bottom: 0.1rem;
+    color: #667eea;
+}
+.quiz-stat .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #23232b;
+    margin-bottom: 0.1rem;
+}
+.quiz-stat .stat-label {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    margin-top: 0.1rem;
+    letter-spacing: 0.2px;
+}
+.quiz-stat.correct .stat-icon { color: #28a745; }
+.quiz-stat.wrong .stat-icon { color: #dc3545; }
+.quiz-stat.skipped .stat-icon { color: #6c757d; }
+.quiz-summary {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    text-align: center;
+}
+.quiz-summary h3 {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+.quiz-summary .score {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 1rem;
+}
+@media (max-width: 768px) {
+    .quiz-header h1 {
+        font-size: 2rem;
+    }
+    .quiz-question {
+        padding: 2rem 1.5rem;
+        margin: 0 1rem 2rem;
+    }
+    .quiz-question h2 {
+        font-size: 1.8rem;
+    }
+    .quiz-options.desktop {
+        display: none;
+    }
+    .quiz-options.mobile {
+        display: grid;
+    }
+    .quiz-stats-top {
+        gap: 1rem;
+        margin: 1rem 0;
+        padding: 0.8rem;
+        flex-wrap: wrap;
+    }
+    
+    .quiz-stat {
+        padding: 0.8rem 1rem;
+        min-width: 70px;
+        flex: 1;
+    }
+    
+    .quiz-actions-container {
+        margin-top: 1.5rem;
+        padding: 1rem;
+    }
+    
+    .quiz-actions {
+        flex-direction: column;
+        align-items: center;
+        margin-top: 0;
+    }
+    .quiz-actions .btn {
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 0.5rem;
+    }
+    .quiz-navigation {
+        padding: 0 1rem;
+    }
+    
+    /* Mobile quiz option fixes */
+    .quiz-option {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+    }
+    
+    /* Mobile touch states */
+    .quiz-option:active {
+        transform: scale(0.98) translateZ(0);
+    }
+    
+    /* Force mobile color states */
+    .quiz-option.correct {
+        background: linear-gradient(135deg, #28a745, #20c997) !important;
+        border-color: #28a745 !important;
+        color: #fff !important;
+    }
+    
+    .quiz-option.incorrect {
+        background: linear-gradient(135deg, #dc3545, #e74c3c) !important;
+        border-color: #dc3545 !important;
+        color: #fff !important;
+    }
+    
+    .quiz-option.answered {
+        background: #e9ecef !important;
+        border-color: #6c757d !important;
+        color: #6c757d !important;
+    }
+}
+@media (min-width: 769px) {
+    .quiz-options.mobile {
+        display: none;
+    }
+    .quiz-options.desktop {
+        display: grid;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-container">
+    <div class="quiz-header">
+        <h1>{{ flashcard.name }} - Quiz</h1>
+        <div class="quiz-progress">
+            <div class="progress-text">İlerleme: <span id="currentQuestion">1</span>/<span id="totalQuestions">{{ total_questions }}</span></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    {% if quiz_items and quiz_items|length > 0 %}
+    <div class="quiz-navigation">
+        <button class="quiz-nav-btn" id="prevBtn" onclick="previousQuestion()" disabled>
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="text-center">
+            <span id="questionCounter">Soru 1</span>
+        </div>
+        <button class="quiz-nav-btn" id="nextBtn" onclick="nextQuestion()">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <div class="quiz-question" id="questionContainer">
+        <h2 id="questionWord"></h2>
+        <div class="hint">Bu kelimenin anlamı nedir?</div>
+        
+        <!-- Quiz Stats - Üstte görünür yerde -->
+        <div class="quiz-stats-top">
+            <div class="quiz-stat correct">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-value" id="correctCount">0</div>
+                <div class="stat-label">Doğru</div>
+            </div>
+            <div class="quiz-stat wrong">
+                <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                <div class="stat-value" id="wrongCount">0</div>
+                <div class="stat-label">Yanlış</div>
+            </div>
+            <div class="quiz-stat skipped">
+                <div class="stat-icon"><i class="fas fa-forward"></i></div>
+                <div class="stat-value" id="skippedCount">0</div>
+                <div class="stat-label">Atlanan</div>
+            </div>
+        </div>
+        
+        <div class="quiz-options desktop" id="optionsDesktop"></div>
+        <div class="quiz-options mobile" id="optionsMobile"></div>
+    </div>
+
+    <!-- Action buttons - Seçeneklerin altında, ayrı container'da -->
+    <div class="quiz-actions-container">
+        <div class="quiz-actions">
+            <button class="btn btn-secondary" onclick="skipQuestion()">
+                <i class="fas fa-forward"></i> Atlayalım
+            </button>
+            <button class="btn btn-danger" onclick="confirmFinishQuiz()">
+                <i class="fas fa-flag-checkered"></i> Quiz'i Bitir
+            </button>
+        </div>
+    </div>
+
+    <div class="quiz-summary" id="summaryDiv" style="display: none;">
+        <h3>Quiz Tamamlandı!</h3>
+        <div class="score" id="finalScore">0%</div>
+        <p id="summaryMessage"></p>
+        <div class="mt-3 d-flex flex-column flex-md-row justify-content-center gap-2">
+            <button class="btn btn-primary" onclick="finishQuiz()">
+                <i class="fas fa-chart-line"></i> Sonuçları Gör
+            </button>
+            <a href="/flashcard/{{ flashcard.id }}/detail" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Flashcard'a Dön
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <h3>Quiz için yeterli kelime sayısı bulunamadı!</h3>
+        <p>Quiz oluşturmak için en az 3 kelimeye ihtiyaç var.</p>
+        <a href="/flashcard/{{ flashcard.id }}/detail" class="btn btn-primary">Flashcard'a Dön</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Quiz verileri - JSON parsing hatasını önlemek için
+const quizQuestions = JSON.parse('{{ quiz_items|tojson|safe }}');
+let currentQuestionIndex = 0;
+let userAnswers = {};
+let quizCompleted = false;
+
+// Audio context for sound effects
+let audioContext;
+let isSoundEnabled = true;
+
+// Initialize audio context
+function initAudioContext() {
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Mobile için user interaction sonrası audio context'i resume et
+        if (audioContext.state === 'suspended') {
+            document.addEventListener('touchstart', function resumeAudio() {
+                audioContext.resume().then(() => {
+                    console.log('Audio context resumed');
+                });
+                document.removeEventListener('touchstart', resumeAudio);
+            });
+        }
+    } catch (e) {
+        console.log('Web Audio API not supported');
+        isSoundEnabled = false;
+    }
+}
+
+// Play success sound
+function playSuccessSound() {
+    if (!isSoundEnabled || !audioContext) return;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+    
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+}
+
+// Play error sound
+function playErrorSound() {
+    if (!isSoundEnabled || !audioContext) return;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3
+    oscillator.frequency.setValueAtTime(196, audioContext.currentTime + 0.1); // G3
+    
+    oscillator.type = 'sawtooth';
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+}
+
+// Sayfa yüklendiğinde
+document.addEventListener('DOMContentLoaded', function() {
+    initAudioContext();
+    if (quizQuestions.length > 0) {
+        displayQuestion(currentQuestionIndex);
+        updateNavigation();
+        updateProgress();
+    }
+});
+
+function displayQuestion(index) {
+    const question = quizQuestions[index];
+    const questionWord = document.getElementById('questionWord');
+    const optionsDesktop = document.getElementById('optionsDesktop');
+    const optionsMobile = document.getElementById('optionsMobile');
+    
+    // Soru kelimesini göster
+    questionWord.textContent = question.question;
+    
+    // NUCLEAR OPTION: Container'ları tamamen yok et ve yeniden oluştur
+    const parent = optionsDesktop.parentNode;
+    
+    // Eski container'ları kaldır
+    optionsDesktop.remove();
+    optionsMobile.remove();
+    
+    // Yeni container'ları oluştur
+    const newDesktopContainer = document.createElement('div');
+    newDesktopContainer.className = 'quiz-options desktop';
+    newDesktopContainer.id = 'optionsDesktop';
+    
+    const newMobileContainer = document.createElement('div');
+    newMobileContainer.className = 'quiz-options mobile';
+    newMobileContainer.id = 'optionsMobile';
+    
+    // Yeni container'ları DOM'a ekle
+    parent.appendChild(newDesktopContainer);
+    parent.appendChild(newMobileContainer);
+    
+    // Yeni referansları al
+    const freshDesktop = document.getElementById('optionsDesktop');
+    const freshMobile = document.getElementById('optionsMobile');
+    
+    // Seçenekleri oluştur - tamamen temiz
+    const createOptionsHTML = () => {
+        return question.options.map((option, optionIndex) => {
+            const letter = ['A', 'B', 'C', 'D'][optionIndex];
+            const isSelected = userAnswers[index] === option;
+            const isAnswered = userAnswers[index] !== undefined;
+            const isCorrect = option === question.answer;
+            
+            let className = 'quiz-option';
+            let styles = 'background: #f8f9fa; border: 2px solid #e9ecef; color: #2c3e50;';
+            
+            if (isAnswered) {
+                styles = 'pointer-events:none;';
+                if (isCorrect) {
+                    className += ' correct';
+                    styles += ' background: linear-gradient(135deg, #28a745, #20c997) !important; border-color: #28a745 !important; color: #fff !important;';
+                } else if (isSelected) {
+                    className += ' incorrect';
+                    styles += ' background: linear-gradient(135deg, #dc3545, #e74c3c) !important; border-color: #dc3545 !important; color: #fff !important;';
+                } else {
+                    className += ' answered';
+                    styles += ' background: #e9ecef !important; border-color: #6c757d !important; color: #6c757d !important;';
+                }
+            }
+            
+            return `
+                <div class="${className}" onclick="selectOption('${option.replace(/'/g, "\\'")}', ${optionIndex})" style="${styles}" data-option-index="${optionIndex}">
+                    <div class="option-letter">${letter}</div>
+                    ${option}
+                </div>
+            `;
+        }).join('');
+    };
+    
+    // Her iki container için aynı HTML'i oluştur
+    const optionsHTML = createOptionsHTML();
+    freshDesktop.innerHTML = optionsHTML;
+    freshMobile.innerHTML = optionsHTML;
+    
+    // Soru sayacını güncelle
+    document.getElementById('questionCounter').textContent = `Soru ${index + 1}`;
+    document.getElementById('currentQuestion').textContent = index + 1;
+    updateProgress();
+    
+    // Atlayalım butonunu kontrol et
+    const skipBtn = document.querySelector('.quiz-actions button[onclick^="skipQuestion"]');
+    if (userAnswers[index] !== undefined && skipBtn) {
+        skipBtn.disabled = true;
+    } else if (skipBtn) {
+        skipBtn.disabled = false;
+    }
+}
+
+function selectOption(option, optionIndex) {
+    if (userAnswers[currentQuestionIndex] !== undefined) return;
+    
+    userAnswers[currentQuestionIndex] = option;
+    const question = quizQuestions[currentQuestionIndex];
+    const isCorrect = option === question.answer;
+    
+    // Mobile touch feedback için vibration ekle
+    if (navigator.vibrate) {
+        if (isCorrect) {
+            navigator.vibrate(100); // Kısa titreşim doğru cevap için
+        } else {
+            navigator.vibrate([100, 50, 100]); // Uzun titreşim yanlış cevap için
+        }
+    }
+    
+    // Ses efekti çal - mobile için user interaction gerektirdiğinden dolayı
+    try {
+        if (isCorrect) {
+            playSuccessSound();
+        } else {
+            playErrorSound();
+        }
+    } catch (e) {
+        console.log('Audio playback failed:', e);
+    }
+    
+    // Hem desktop hem mobile seçenekleri güncelle - temiz yaklaşım
+    const allDesktopOptions = document.querySelectorAll('#optionsDesktop .quiz-option');
+    const allMobileOptions = document.querySelectorAll('#optionsMobile .quiz-option');
+    const allOptions = [...allDesktopOptions, ...allMobileOptions];
+    
+    allOptions.forEach((opt, idx) => {
+        // İlk önce tüm style ve class'ları tamamen temizle
+        opt.style.pointerEvents = 'none';
+        opt.classList.remove('selected', 'correct', 'incorrect', 'answered');
+        
+        // Tüm renk ve border özelliklerini sıfırla
+        opt.style.removeProperty('background');
+        opt.style.removeProperty('border-color');
+        opt.style.removeProperty('color');
+        opt.style.removeProperty('transform');
+        
+        // Hangi container'da olduğumuzu belirle (desktop ya da mobile)
+        const isDesktop = opt.closest('#optionsDesktop');
+        const containerOptions = isDesktop ? allDesktopOptions : allMobileOptions;
+        const realIndex = Array.from(containerOptions).indexOf(opt);
+        
+        if (realIndex >= 0 && realIndex < question.options.length) {
+            const optionText = question.options[realIndex];
+            
+            // Renk sınıflarını ve style'ları ekle
+            if (optionText === question.answer) {
+                opt.classList.add('correct');
+                opt.style.setProperty('background', 'linear-gradient(135deg, #28a745, #20c997)', 'important');
+                opt.style.setProperty('border-color', '#28a745', 'important');
+                opt.style.setProperty('color', '#fff', 'important');
+            } else if (optionText === option) {
+                opt.classList.add('incorrect');
+                opt.style.setProperty('background', 'linear-gradient(135deg, #dc3545, #e74c3c)', 'important');
+                opt.style.setProperty('border-color', '#dc3545', 'important');
+                opt.style.setProperty('color', '#fff', 'important');
+            } else {
+                opt.classList.add('answered');
+                opt.style.setProperty('background', '#e9ecef', 'important');
+                opt.style.setProperty('border-color', '#6c757d', 'important');
+                opt.style.setProperty('color', '#6c757d', 'important');
+            }
+        }
+    });
+    
+    // Atlayalım butonunu devre dışı bırak
+    const skipBtn = document.querySelector('.quiz-actions button[onclick^="skipQuestion"]');
+    if (skipBtn) skipBtn.disabled = true;
+    
+    updateStats();
+    updateNavigation();
+    updateProgress();
+    
+    // 2 saniye sonra otomatik geçiş
+    setTimeout(() => {
+        if (currentQuestionIndex < quizQuestions.length - 1) {
+            currentQuestionIndex++;
+            displayQuestion(currentQuestionIndex);
+            updateNavigation();
+            updateProgress();
+        } else {
+            showSummary();
+        }
+    }, 2000);
+}
+
+function skipQuestion() {
+    if (userAnswers[currentQuestionIndex] !== undefined) return;
+    
+    // Soruyu atla
+    userAnswers[currentQuestionIndex] = null;
+    
+    document.querySelectorAll('.quiz-option').forEach(opt => {
+        opt.style.pointerEvents = 'none';
+        opt.classList.add('answered');
+    });
+    
+    const skipBtn = document.querySelector('.quiz-actions button[onclick^="skipQuestion"]');
+    if (skipBtn) skipBtn.disabled = true;
+    
+    updateStats();
+    
+    setTimeout(() => {
+        if (currentQuestionIndex < quizQuestions.length - 1) {
+            currentQuestionIndex++;
+            displayQuestion(currentQuestionIndex);
+            updateNavigation();
+            updateProgress();
+        } else {
+            showSummary();
+        }
+    }, 1000);
+}
+
+function nextQuestion() {
+    if (currentQuestionIndex < quizQuestions.length - 1) {
+        currentQuestionIndex++;
+        displayQuestion(currentQuestionIndex);
+        updateNavigation();
+        updateProgress();
+    } else {
+        showSummary();
+    }
+}
+
+function previousQuestion() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        displayQuestion(currentQuestionIndex);
+        updateNavigation();
+        updateProgress();
+    }
+}
+
+function updateNavigation() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    prevBtn.disabled = currentQuestionIndex === 0;
+    nextBtn.disabled = currentQuestionIndex === quizQuestions.length - 1;
+}
+
+function updateProgress() {
+    const answeredCount = Object.values(userAnswers).filter(x => x !== undefined).length;
+    const progressPercent = (answeredCount / quizQuestions.length) * 100;
+    document.getElementById('progressFill').style.width = progressPercent + '%';
+}
+
+function updateStats() {
+    let correct = 0, wrong = 0, skipped = 0;
+    
+    Object.entries(userAnswers).forEach(([index, answer]) => {
+        if (answer === null) {
+            skipped++;
+        } else if (answer !== undefined) {
+            const question = quizQuestions[parseInt(index)];
+            if (answer === question.answer) {
+                correct++;
+            } else {
+                wrong++;
+            }
+        }
+    });
+    
+    document.getElementById('correctCount').textContent = correct;
+    document.getElementById('wrongCount').textContent = wrong;
+    document.getElementById('skippedCount').textContent = skipped;
+}
+
+function showSummary() {
+    let correctCount = 0;
+    let answeredCount = 0;
+    
+    Object.entries(userAnswers).forEach(([index, answer]) => {
+        if (answer !== null && answer !== undefined) {
+            answeredCount++;
+            const question = quizQuestions[parseInt(index)];
+            if (answer === question.answer) {
+                correctCount++;
+            }
+        }
+    });
+    
+    const score = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+    
+    document.getElementById('finalScore').textContent = score + '%';
+    document.getElementById('summaryMessage').textContent = 
+        `${quizQuestions.length} sorudan ${correctCount} doğru cevap ile %${score} başarı oranı elde ettiniz.`;
+    
+    document.getElementById('questionContainer').style.display = 'none';
+    document.getElementById('summaryDiv').style.display = 'block';
+    quizCompleted = true;
+}
+
+function confirmFinishQuiz() {
+    if (confirm("Quiz'i bitirmek istediğinize emin misiniz?")) {
+        showSummary();
+    }
+}
+
+function finishQuiz() {
+    const answersArr = [];
+    quizQuestions.forEach((q, idx) => {
+        answersArr.push({
+            id: q.id,
+            question: q.question,
+            correct_answer: q.answer,
+            user_answer: userAnswers[idx] !== undefined ? userAnswers[idx] : null
+        });
+    });
+    
+    // JSON formatında veri gönder
+    fetch(`/flashcard/{{ flashcard.id }}/study/quiz/finish`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            answers: answersArr
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.href = `/flashcard/{{ flashcard.id }}/study/quiz/result`;
+        } else {
+            alert('Bir hata oluştu!');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu!');
+    });
+}
+</script>
+{% endblock %}

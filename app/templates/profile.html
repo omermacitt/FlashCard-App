@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Profil - Flashcard App{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 25px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto 1rem;
+        box-shadow: 0 10px 30px rgba(240, 147, 251, 0.4);
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 1.5rem;
+        text-align: center;
+        height: 100%;
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .level-progress {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50px;
+        height: 20px;
+        overflow: hidden;
+        margin-top: 1rem;
+    }
+    
+    .level-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 50px;
+        transition: width 0.3s ease;
+    }
+    
+    .chart-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .daily-stat {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 15px;
+        background: rgba(102, 126, 234, 0.1);
+        margin-bottom: 0.5rem;
+    }
+    
+    .edit-profile-btn {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border: none;
+        border-radius: 50px;
+        color: white;
+        padding: 12px 30px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
+    }
+    
+    .edit-profile-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Profil Kartı -->
+    <div class="row">
+        <div class="col-12">
+            <div class="profile-card text-center">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 class="mb-2">{{ current_user.username }}</h2>
+                <p class="mb-3"><i class="fas fa-envelope me-2"></i>{{ current_user.email }}</p>
+                <p class="mb-3"><i class="fas fa-calendar me-2"></i>Üyelik: {{ current_user.created_at.strftime('%d.%m.%Y') }}</p>
+                
+                <!-- Seviye İlerleme -->
+                <div class="row align-items-center mt-4">
+                    <div class="col-md-3">
+                        <h4><i class="fas fa-star me-2"></i>Seviye {{ current_user.level }}</h4>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="level-progress">
+                            <div class="level-progress-bar" style="width: {{ level_progress }}%"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <small>{{ points_to_next_level }} puan kaldı</small>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button class="edit-profile-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <i class="fas fa-edit me-2"></i>Profili Düzenle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ana İstatistikler -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ total_stats.total_words }}</div>
+                <div class="stat-label">Toplam Kelime</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ total_stats.learned_words }}</div>
+                <div class="stat-label">Öğrenilen Kelime</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ total_stats.success_rate }}%</div>
+                <div class="stat-label">Başarı Oranı</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ total_stats.total_points }}</div>
+                <div class="stat-label">Toplam Puan</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Çalışma İstatistikleri -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ total_stats.total_study_time }}</div>
+                <div class="stat-label">Toplam Çalışma (dakika)</div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ total_stats.current_streak }}</div>
+                <div class="stat-label">Günlük Seri</div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ total_stats.longest_streak }}</div>
+                <div class="stat-label">En Uzun Seri</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Haftalık Grafik -->
+    <div class="chart-container">
+        <h4 class="mb-4"><i class="fas fa-chart-line me-2"></i>Son 7 Günün Aktivitesi</h4>
+        <div class="row">
+            {% for day_stat in weekly_stats %}
+            <div class="col">
+                <div class="daily-stat">
+                    <div style="font-weight: 600; color: #667eea;">{{ day_stat.date.strftime('%d/%m') }}</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: #333;">{{ day_stat.cards_seen }}</div>
+                    <div style="font-size: 0.8rem; color: #666;">kelime</div>
+                    <div style="font-size: 0.8rem; color: #666;">{{ day_stat.study_time_minutes }}dk</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Bugünkü İstatistikler -->
+    <div class="chart-container">
+        <h4 class="mb-4"><i class="fas fa-calendar-day me-2"></i>Bugünkü Aktivite</h4>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="stat-number" style="font-size: 1.8rem;">{{ today_stats.cards_seen }}</div>
+                    <div class="stat-label">Görülen Kelime</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="stat-number" style="font-size: 1.8rem;">{{ today_stats.study_time_minutes }}</div>
+                    <div class="stat-label">Çalışma Süresi (dk)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="stat-number" style="font-size: 1.8rem;">{{ today_stats.correct_answers }}</div>
+                    <div class="stat-label">Doğru Cevap</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="stat-number" style="font-size: 1.8rem;">{{ today_stats.accuracy_rate }}%</div>
+                    <div class="stat-label">Doğruluk Oranı</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profil Düzenleme Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius: 20px; border: none;">
+            <div class="modal-header" style="background: var(--primary-gradient); color: white; border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Profili Düzenle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.update_profile') }}">
+                <div class="modal-body" style="padding: 2rem;">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Kullanıcı Adı</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-posta</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                    </div>
+                    <hr>
+                    <h6><i class="fas fa-lock me-2"></i>Şifre Değiştir (İsteğe bağlı)</h6>
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Mevcut Şifre</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">Yeni Şifre</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Yeni Şifre Tekrar</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                    </div>
+                </div>
+                <div class="modal-footer" style="border: none; padding: 2rem; padding-top: 0;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+{% block title %}{{ flashcard.name }} - Quiz Sonuçları{% endblock %}
+
+{% block extra_css %}
+<style>
+.result-container {
+    padding: 2rem 0;
+    min-height: 80vh;
+}
+
+.result-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.result-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.score-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-bottom: 3rem;
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+}
+
+.score-value {
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.score-text {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.stat-icon.correct { color: #28a745; }
+.stat-icon.wrong { color: #dc3545; }
+.stat-icon.total { color: #667eea; }
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.results-list {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.results-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.results-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.result-item {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.3s ease;
+}
+
+.result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.question-text {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.answer-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.result-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.result-status.correct {
+    color: #28a745;
+}
+
+.result-status.wrong {
+    color: #dc3545;
+}
+
+.result-status.skipped {
+    color: #6c757d;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+    min-width: 200px;
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .result-header h1 {
+        font-size: 2rem;
+    }
+    
+    .score-value {
+        font-size: 3rem;
+    }
+    
+    .score-card {
+        padding: 2rem 1rem;
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+    }
+    
+    .result-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .action-buttons .btn {
+        min-width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container result-container">
+    <!-- Header -->
+    <div class="result-header">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center">
+                <li class="breadcrumb-item"><a href="/add-flashcard" class="text-decoration-none">Flashcard'larım</a></li>
+                <li class="breadcrumb-item"><a href="/flashcard/{{ flashcard.id }}/detail" class="text-decoration-none">{{ flashcard.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Quiz Sonuçları</li>
+            </ol>
+        </nav>
+        <h1><i class="fas fa-chart-line me-3"></i>Quiz Sonuçları</h1>
+        <p class="text-muted fs-5">{{ flashcard.name }} flashcard'ı için quiz performansınız</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Score Card -->
+            <div class="score-card">
+                <div class="score-value">
+                    {% if total_questions > 0 %}
+                        {{ ((correct_count / total_questions) * 100)|round|int }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+                <div class="score-text">
+                    {{ total_questions }} sorudan {{ correct_count }} doğru cevap
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="stat-value">{{ total_questions }}</div>
+                    <div class="stat-label">Toplam Soru</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon correct">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-value">{{ correct_count }}</div>
+                    <div class="stat-label">Doğru Cevap</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon wrong">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-value">{{ wrong_count }}</div>
+                    <div class="stat-label">Yanlış Cevap</div>
+                </div>
+            </div>
+
+            <!-- Detailed Results -->
+            {% if results %}
+            <div class="results-list">
+                <div class="results-header">
+                    <h3><i class="fas fa-list-alt me-2"></i>Detaylı Sonuçlar</h3>
+                </div>
+                {% for result in results %}
+                <div class="result-item">
+                    <div class="flex-grow-1">
+                        <div class="question-text">{{ result.question }}</div>
+                        <div class="answer-text">
+                            <strong>Doğru Cevap:</strong> {{ result.correct_answer }}
+                            {% if result.user_answer %}
+                                <br><strong>Sizin Cevabınız:</strong> {{ result.user_answer }}
+                            {% else %}
+                                <br><strong>Sizin Cevabınız:</strong> <em>Atlandı</em>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="result-status {% if result.is_correct %}correct{% elif result.user_answer %}wrong{% else %}skipped{% endif %}">
+                        {% if result.is_correct %}
+                            <i class="fas fa-check-circle"></i>
+                            <span>Doğru</span>
+                        {% elif result.user_answer %}
+                            <i class="fas fa-times-circle"></i>
+                            <span>Yanlış</span>
+                        {% else %}
+                            <i class="fas fa-forward"></i>
+                            <span>Atlandı</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="/flashcard/{{ flashcard.id }}/study/quiz?lang_mode={{ request.args.get('lang_mode', 'mixed') }}" class="btn btn-primary">
+                    <i class="fas fa-redo me-2"></i>Tekrar Quiz Yap
+                </a>
+                <a href="/flashcard/{{ flashcard.id }}/study" class="btn btn-secondary">
+                    <i class="fas fa-graduation-cap me-2"></i>Başka Çalışma Modu
+                </a>
+                <a href="/flashcard/{{ flashcard.id }}/detail" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Flashcard'a Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

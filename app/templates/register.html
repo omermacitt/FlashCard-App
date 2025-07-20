@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% block title %}Kayıt Ol - Flashcard App{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="70" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="30" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+        animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .auth-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 30px;
+        padding: 3rem;
+        min-width: 420px;
+        max-width: 500px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        position: relative;
+        z-index: 1;
+        animation: slideUp 0.8s ease-out;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-header h2 {
+        color: #333;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 2.2rem;
+    }
+
+    .auth-header p {
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .auth-toggle {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 50px;
+        padding: 4px;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .auth-toggle a {
+        flex: 1;
+        text-align: center;
+        padding: 12px 24px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        color: #666;
+        position: relative;
+        z-index: 2;
+    }
+
+    .auth-toggle a.active {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+    }
+
+    .form-floating {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-floating input {
+        background: rgba(248, 249, 250, 0.8);
+        border: 2px solid #e9ecef;
+        border-radius: 15px;
+        padding: 20px 60px 20px 20px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .form-floating input:focus {
+        background: white;
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        outline: none;
+    }
+
+    .form-floating label {
+        position: absolute;
+        top: 50%;
+        left: 20px;
+        transform: translateY(-50%);
+        color: #666;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        background: transparent;
+        padding: 0;
+    }
+
+    .form-floating input:focus + label,
+    .form-floating input:not(:placeholder-shown) + label {
+        top: 8px;
+        font-size: 0.85rem;
+        color: #667eea;
+        transform: translateY(0);
+        background: white;
+        padding: 0 8px;
+    }
+
+    .input-icon {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #667eea;
+        font-size: 1.2rem;
+        z-index: 3;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border: none;
+        border-radius: 50px;
+        padding: 16px 40px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: white;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(240, 147, 251, 0.4);
+        background: linear-gradient(135deg, #e879f9 0%, #ef4444 100%);
+    }
+
+    .auth-footer {
+        text-align: center;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .auth-footer a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .auth-footer a:hover {
+        color: #5a67d8;
+    }
+
+    .password-strength {
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .strength-weak { color: #dc3545; }
+    .strength-medium { color: #ffc107; }
+    .strength-strong { color: #28a745; }
+
+    @media (max-width: 576px) {
+        .auth-card {
+            min-width: 90%;
+            padding: 2rem;
+            margin: 1rem;
+        }
+        
+        .auth-header h2 {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2><i class="fas fa-user-plus text-primary me-2"></i>Kayıt Ol</h2>
+            <p>Flashcard App'e hoş geldiniz! Hesabınızı oluşturun.</p>
+        </div>
+
+        <div class="auth-toggle">
+            <a href="/login">Giriş Yap</a>
+            <a href="/register" class="active">Kayıt Ol</a>
+        </div>
+
+        <form method="POST" novalidate>
+            <div class="form-floating">
+                <input type="text" id="registerName" name="register_name" placeholder="Ad Soyad" required>
+                <i class="fas fa-user input-icon"></i>
+            </div>
+
+            <div class="form-floating">
+                <input type="email" id="registerEmail" name="register_email" placeholder="E-posta" required>
+                <i class="fas fa-envelope input-icon"></i>
+            </div>
+
+            <div class="form-floating">
+                <input type="password" id="registerPassword" name="register_password" placeholder="Şifre" required minlength="6">
+                <i class="fas fa-lock input-icon"></i>
+                <div class="password-strength" id="passwordStrength"></div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-rocket me-2"></i>Hesap Oluştur
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p class="mb-0">Zaten hesabınız var mı? <a href="/login">Giriş yapın</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password strength checker
+    const passwordInput = document.getElementById('registerPassword');
+    const strengthDiv = document.getElementById('passwordStrength');
+
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        const strength = checkPasswordStrength(password);
+        
+        if (password.length === 0) {
+            strengthDiv.textContent = '';
+            return;
+        }
+        
+        strengthDiv.className = 'password-strength ' + strength.class;
+        strengthDiv.textContent = strength.text;
+    });
+
+    function checkPasswordStrength(password) {
+        let score = 0;
+        
+        if (password.length >= 8) score++;
+        if (password.match(/[a-z]/)) score++;
+        if (password.match(/[A-Z]/)) score++;
+        if (password.match(/[0-9]/)) score++;
+        if (password.match(/[^a-zA-Z0-9]/)) score++;
+        
+        if (score < 3) {
+            return { class: 'strength-weak', text: 'Zayıf şifre' };
+        } else if (score < 4) {
+            return { class: 'strength-medium', text: 'Orta şifre' };
+        } else {
+            return { class: 'strength-strong', text: 'Güçlü şifre' };
+        }
+    }
+
+    // Form animation
+    const inputs = document.querySelectorAll('.form-floating input');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+</script>
+{% endblock %}

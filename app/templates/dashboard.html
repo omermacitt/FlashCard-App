@@ -1,0 +1,1325 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Flashcard App{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .dashboard-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 25px;
+        color: white;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: var(--gradient);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .stat-value {
+        font-size: 3rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        color: #666;
+        font-weight: 600;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Dashboard Sections */
+    .dashboard-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+
+    .action-btn {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 20px;
+        padding: 2rem;
+        text-decoration: none;
+        color: #333;
+        transition: all 0.4s ease;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .action-btn:hover {
+        border-color: transparent;
+        background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
+        color: #667eea;
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
+    }
+
+    .action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .action-btn:hover::before {
+        left: 100%;
+    }
+
+    .action-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    /* Weekly Chart */
+    .weekly-chart-container {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 1rem 0;
+    }
+
+    .weekly-chart {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        height: 200px;
+        gap: 0.5rem;
+        position: relative;
+        padding-bottom: 40px;
+    }
+
+    .chart-day {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+        position: relative;
+    }
+
+    .chart-value {
+        font-size: 0.9rem;
+        color: #28a745;
+        font-weight: 700;
+        margin-bottom: 8px;
+        min-height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chart-bar-container {
+        flex: 1;
+        display: flex;
+        align-items: end;
+        width: 100%;
+        max-width: 40px;
+        position: relative;
+    }
+
+    .chart-bar-learned {
+        background: linear-gradient(to top, #28a745, #20c997);
+        border-radius: 8px 8px 0 0;
+        width: 100%;
+        min-height: 8px;
+        position: relative;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+    }
+
+    .chart-bar-learned:hover {
+        background: linear-gradient(to top, #218838, #1e7e34);
+        transform: scaleY(1.05) scaleX(1.1);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    }
+
+    .chart-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #666;
+        margin-top: 8px;
+        text-align: center;
+        position: absolute;
+        bottom: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .weekly-summary .summary-item {
+        padding: 0.5rem;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.5);
+        margin: 0 0.25rem;
+    }
+
+    /* Activity Items */
+    .activity-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin-bottom: 1rem;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .activity-item:hover {
+        background: #fff;
+        transform: translateX(10px);
+        border-left-color: #667eea;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .activity-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    /* Progress Ring */
+    .progress-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .progress-ring {
+        transform: rotate(-90deg);
+    }
+
+    .progress-circle {
+        fill: none;
+        stroke-width: 8;
+        stroke: #e9ecef;
+    }
+
+    .progress-circle.active {
+        stroke: #667eea;
+        stroke-dasharray: 251.2;
+        stroke-dashoffset: 0;
+        animation: progressAnimation 2s ease-out;
+    }
+
+    @keyframes progressAnimation {
+        from { stroke-dashoffset: 251.2; }
+    }
+
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    /* Upcoming Reviews */
+    .review-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 15px;
+        margin-bottom: 1rem;
+        border-left: 5px solid #667eea;
+        transition: all 0.3s ease;
+    }
+
+    .review-item:hover {
+        background: #fff;
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Streak Counter */
+    .streak-counter {
+        text-align: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .streak-counter::before {
+        content: '🔥';
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 2rem;
+        opacity: 0.3;
+    }
+
+    .streak-number {
+        font-size: 4rem;
+        font-weight: 700;
+        color: #d2691e;
+        margin: 0;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Motivational Card */
+    .motivation-card {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        border: none;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .motivation-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+        animation: sparkle 4s linear infinite;
+    }
+
+    @keyframes sparkle {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .dashboard-hero {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+        }
+        
+        .dashboard-section {
+            padding: 1.5rem;
+        }
+        
+        .weekly-chart {
+            height: 150px;
+            padding: 1rem;
+        }
+    }
+
+    /* Theme Colors */
+    .text-primary-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Hero Section -->
+    <div class="dashboard-hero">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-fire me-3"></i>Hoş geldin, {{ current_user.username }}!
+                </h1>
+                <p class="lead mb-0 opacity-90">
+                    {% if son_calistigi_tarih %}
+                        Son çalışman: {{ son_calistigi_tarih }} - Harika gidiyorsun! 🚀
+                    {% else %}
+                        Hadi bugün öğrenmeye başlayalım! İlk adımı atma zamanı 🌟
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="streak-counter">
+                    <p class="streak-number">{{ streak_days|default(0) }}</p>
+                    <p class="mb-0 fw-bold text-white">Günlük Seri</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Günlük İstatistikler -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-calendar-day text-success"></i>
+                Bugünkü Performansım
+            </h3>
+            <span class="badge bg-success">Bugün</span>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="stat-value">{{ today_cards_seen or 0 }}</div>
+                <div class="stat-label">Bugün Çalışılan Kelime</div>
+            </div>
+
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="stat-value">{{ today_cards_added or 0 }}</div>
+                <div class="stat-label">Bugün Eklenen Kelime</div>
+            </div>
+
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value">{{ today_study_time or 0 }}</div>
+                <div class="stat-label">Dakika Çalışma</div>
+            </div>
+
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-value">{{ today_accuracy or 0 }}%</div>
+                <div class="stat-label">Bugünkü Başarı</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Haftalık İstatistikler -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-calendar-week text-primary"></i>
+                Bu Haftaki Performansım
+            </h3>
+            <span class="badge bg-primary">Son 7 Gün</span>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="stat-value">{{ weekly_total_cards or 0 }}</div>
+                <div class="stat-label">Haftalık Çalışılan</div>
+            </div>
+
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value">{{ weekly_total_time or 0 }}</div>
+                <div class="stat-label">Dakika Çalışma</div>
+            </div>
+
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-value">{{ weekly_active_days or 0 }}</div>
+                <div class="stat-label">Aktif Gün</div>
+            </div>
+
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">
+                    <i class="fas fa-target"></i>
+                </div>
+                <div class="stat-value">{{ weekly_avg_cards or 0 }}</div>
+                <div class="stat-label">Günlük Ortalama</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Genel İstatistikler -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-chart-line text-warning"></i>
+                Genel İstatistiklerim
+            </h3>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="stat-value">{{ toplam_kelime or 0 }}</div>
+                <div class="stat-label">Toplam Kelime</div>
+            </div>
+
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value">{{ ogrenilen_kelime or 0 }}</div>
+                <div class="stat-label">Öğrenilen Kelime</div>
+            </div>
+
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value">{{ ogrenilmesi_beklenen or 0 }}</div>
+                <div class="stat-label">Beklemede</div>
+            </div>
+
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-value">
+                    {% if toplam_kelime and toplam_kelime > 0 %}
+                        {{ ((ogrenilen_kelime or 0) / toplam_kelime * 100) | round(1) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+                <div class="stat-label">Genel Başarı</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sol Kolon -->
+        <div class="col-lg-8">
+            <!-- Hızlı Aksiyon Tuşları -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-bolt text-warning"></i>
+                        Hızlı Aksiyonlar
+                    </h3>
+                </div>
+                <div class="quick-actions">
+                    <a href="/add-flashcard" class="action-btn">
+                        <div class="action-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1 fw-bold">Yeni Flashcard Oluştur</h5>
+                            <small class="text-muted">Yeni bir deck oluştur ve kelime eklemeye başla</small>
+                        </div>
+                    </a>
+
+                    <a href="/start_work" class="action-btn">
+                        <div class="action-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1 fw-bold">Çalışmaya Başla</h5>
+                            <small class="text-muted">Kartlarını tekrar et ve öğrenmeye devam et</small>
+                        </div>
+                    </a>
+
+                    <a href="/flashcards" class="action-btn">
+                        <div class="action-icon" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1 fw-bold">Flashcard'larımı Görüntüle</h5>
+                            <small class="text-muted">Tüm deck'lerini yönet ve düzenle</small>
+                        </div>
+                    </a>
+
+                    <a href="/quiz" class="action-btn">
+                        <div class="action-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1 fw-bold">Quiz Çöz</h5>
+                            <small class="text-muted">Bilgilerini test et ve puan kazan</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Haftalık İlerleme -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-graduation-cap text-success"></i>
+                        Haftalık Öğrenme İlerlemesi
+                    </h3>
+                    <span class="badge bg-success">Son 7 Gün</span>
+                </div>
+                
+                <!-- Chart Container -->
+                <div class="weekly-chart-container">
+                    <div class="weekly-chart">
+                        {% set max_learned = weekly_chart_data|map(attribute='cards_learned')|max %}
+                        {% set max_value = [max_learned, 5]|max %}
+                        
+                        {% for day_data in weekly_chart_data %}
+                            {% set height = (day_data.cards_learned / max_value * 100) if max_value > 0 else 0 %}
+                            <div class="chart-day">
+                                <div class="chart-value">{{ day_data.cards_learned }}</div>
+                                <div class="chart-bar-container">
+                                    <div class="chart-bar chart-bar-learned" 
+                                         style="height: {{ [height, 8]|max }}%;" 
+                                         data-day="{{ day_data.day_short }}"
+                                         data-learned="{{ day_data.cards_learned }}"
+                                         data-seen="{{ day_data.cards_seen }}"
+                                         data-time="{{ day_data.study_time }}"
+                                         title="{{ day_data.day_name }}: {{ day_data.cards_learned }} öğrenilen, {{ day_data.cards_seen }} çalışılan, {{ day_data.study_time }} dakika">
+                                    </div>
+                                </div>
+                                <div class="chart-label">{{ day_data.day_short }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Summary Stats -->
+                <div class="weekly-summary mt-4">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="summary-item">
+                                <h5 class="text-success fw-bold mb-1">{{ weekly_chart_data|sum(attribute='cards_learned') or 0 }}</h5>
+                                <small class="text-muted">Öğrenilen Kelime</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="summary-item">
+                                <h5 class="text-primary fw-bold mb-1">{{ weekly_total_cards or 0 }}</h5>
+                                <small class="text-muted">Çalışılan Kelime</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="summary-item">
+                                <h5 class="text-warning fw-bold mb-1">{{ weekly_total_time or 0 }}</h5>
+                                <small class="text-muted">Dakika</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bugün Eklenen Kartlar -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-calendar-plus text-success"></i>
+                        Bugün Eklenen Kartlar
+                    </h3>
+                    <span class="badge bg-success">{{ today_added_words|length if today_added_words else 0 }}</span>
+                </div>
+                <div class="activity-list">
+                    {% if today_added_words %}
+                        {% for word in today_added_words %}
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">{{ word.word }} → {{ word.answer }}</h6>
+                                        <div class="d-flex gap-2 mb-1">
+                                            <span class="badge bg-primary">{{ word.front_language|upper }}</span>
+                                            <span class="badge bg-success">{{ word.back_language|upper }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ word.created_at }}</small>
+                                    </div>
+                                    <span class="badge bg-success">YENİ</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-plus"></i>
+                            <h5>Bugün henüz kelime eklenmemiş</h5>
+                            <p class="text-muted">Bugün yeni kelimeler ekleyerek öğrenmeye devam et!</p>
+                            <a href="/add-flashcard" class="btn btn-success">
+                                <i class="fas fa-plus me-2"></i>Kelime Ekle
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Bu Hafta Öğrenilen Kartlar -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-graduation-cap text-warning"></i>
+                        Bu Hafta Öğrenilenler
+                    </h3>
+                    <span class="badge bg-success">{{ weekly_learned_words|length if weekly_learned_words else 0 }}</span>
+                </div>
+                <div class="activity-list">
+                    {% if weekly_learned_words %}
+                        {% for word in weekly_learned_words[:5] %}
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">{{ word.word }} → {{ word.answer }}</h6>
+                                        <div class="d-flex gap-2 mb-1">
+                                            <span class="badge bg-primary">{{ word.front_language|upper }}</span>
+                                            <span class="badge bg-success">{{ word.back_language|upper }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ word.created_at }}</small>
+                                    </div>
+                                    <span class="badge bg-success">ÖĞRENİLDİ</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if weekly_learned_words|length > 5 %}
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#weeklyLearnedModal">
+                                <i class="fas fa-eye me-1"></i>{{ weekly_learned_words|length - 5 }} kelime daha görüntüle
+                            </button>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-graduation-cap"></i>
+                            <h5>Bu hafta henüz kelime öğrenilmemiş</h5>
+                            <p class="text-muted">Çalışmaya başlayarak kelimelerini öğrenmeye başla!</p>
+                            <a href="/start_work" class="btn btn-warning">
+                                <i class="fas fa-play me-2"></i>Çalışmaya Başla
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Son Eklenen Kartlar (Genel) -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-plus-circle text-info"></i>
+                        Son Eklenen Kartlar (Son 7 Gün)
+                    </h3>
+                    <span class="badge bg-light text-dark">{{ son_eklenenler|length if son_eklenenler else 0 }}</span>
+                </div>
+                <div class="activity-list">
+                    {% if son_eklenenler %}
+                        {% for word in son_eklenenler[:5] %}
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">{{ word.word }} → {{ word.answer }}</h6>
+                                        <div class="d-flex gap-2 mb-1">
+                                            <span class="badge bg-primary">{{ word.front_language|upper }}</span>
+                                            <span class="badge bg-success">{{ word.back_language|upper }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ word.created_at }}</small>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-plus-circle"></i>
+                            <h5>Henüz kelime eklenmemiş</h5>
+                            <p class="text-muted">İlk kelimeni ekleyerek öğrenme yolculuğuna başla!</p>
+                            <a href="/add-flashcard" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>İlk Kartını Ekle
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Kolon -->
+        <div class="col-lg-4">
+            <!-- Günlük Hedef -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-target text-danger"></i>
+                        Günlük Hedef
+                    </h3>
+                </div>
+                <div class="text-center">
+                    {% set daily_goal = 25 %}
+                    {% set progress_percentage = (today_cards_seen / daily_goal * 100) if daily_goal > 0 else 0 %}
+                    {% set stroke_offset = 251.2 - (251.2 * (progress_percentage / 100)) %}
+                    
+                    <div class="progress-container">
+                        <svg width="150" height="150" class="progress-ring">
+                            <circle cx="75" cy="75" r="40" class="progress-circle"></circle>
+                            <circle cx="75" cy="75" r="40" class="progress-circle active" 
+                                    style="stroke-dashoffset: {{ stroke_offset }};"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <h3 class="text-primary fw-bold mb-0">{{ today_cards_seen|default(0) }}</h3>
+                            <small class="text-muted">/ {{ daily_goal }}</small>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h5 class="text-primary-gradient">%{{ progress_percentage|round|int }} Tamamlandı</h5>
+                        {% if progress_percentage >= 100 %}
+                            <p class="text-success mb-0">🎉 Günlük hedefini tamamladın!</p>
+                        {% elif progress_percentage >= 75 %}
+                            <p class="text-warning mb-0">💪 Hedefine çok yakınsın!</p>
+                        {% elif progress_percentage >= 50 %}
+                            <p class="text-info mb-0">📚 Yarı yoldasın, devam et!</p>
+                        {% else %}
+                            <p class="text-muted mb-0">🚀 Başlangıç yapmış bulunuyorsun!</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Öğrenilmemiş Kelimeler -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-exclamation-circle text-warning"></i>
+                        Öğrenilmemiş Kelimeler
+                    </h3>
+                    <span class="badge bg-warning">{{ ogrenilmemisler|length if ogrenilmemisler else 0 }}</span>
+                </div>
+                <div class="activity-list" style="max-height: 300px;">
+                    {% if ogrenilmemisler %}
+                        {% for word in ogrenilmemisler[:4] %}
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">
+                                <i class="fas fa-exclamation"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">{{ word.word }} → {{ word.answer }}</h6>
+                                <div class="d-flex gap-2 mb-1">
+                                    <span class="badge bg-primary">{{ word.front_language|upper }}</span>
+                                    <span class="badge bg-success">{{ word.back_language|upper }}</span>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-layer-group me-1"></i>
+                                    {% if word.flashcard_name %}{{ word.flashcard_name }}{% else %}Flashcard{% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if ogrenilmemisler|length > 4 %}
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#unlearnedWordsModal">
+                                <i class="fas fa-eye me-1"></i>{{ ogrenilmemisler|length - 4 }} kelime daha görüntüle
+                            </button>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <h6>Tebrikler!</h6>
+                            <p class="text-muted mb-0">Tüm kelimeleri öğrendin 🎉</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Motivasyon Kartı (Extra) -->
+            <div class="dashboard-section motivation-card">
+                <div class="position-relative">
+                    <i class="fas fa-trophy fa-3x mb-3"></i>
+                    <h4 class="fw-bold mb-2">Harika Gidiyorsun! 🌟</h4>
+                    <p class="mb-3">
+                        {% if total_study_time > 60 %}
+                            Toplam <strong>{{ (total_study_time / 60)|round(1) }} saat</strong> çalışmışsın!
+                        {% else %}
+                            Toplam <strong>{{ total_study_time|default(0) }} dakika</strong> çalışmışsın!
+                        {% endif %}
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <div class="text-center">
+                            <h6 class="mb-0">🔥 {{ streak_days|default(0) }}</h6>
+                            <small>Günlük Seri</small>
+                        </div>
+                        <div class="text-center">
+                            <h6 class="mb-0">⭐ {{ total_points|default(0) }}</h6>
+                            <small>Toplam Puan</small>
+                        </div>
+                        <div class="text-center">
+                            <h6 class="mb-0">🏆 {{ level|default(1) }}</h6>
+                            <small>Level</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Başarı Rozetleri (Extra) -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-medal text-warning"></i>
+                        Son Başarılar
+                    </h3>
+                </div>
+                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                    <div class="text-center">
+                        <div class="badge bg-warning fs-4 p-3 rounded-circle">🔥</div>
+                        <small class="d-block mt-2 text-muted">7 Günlük Seri</small>
+                    </div>
+                    <div class="text-center">
+                        <div class="badge bg-success fs-4 p-3 rounded-circle">🎯</div>
+                        <small class="d-block mt-2 text-muted">100 Kelime</small>
+                    </div>
+                    <div class="text-center">
+                        <div class="badge bg-primary fs-4 p-3 rounded-circle">📚</div>
+                        <small class="d-block mt-2 text-muted">İlk Deck</small>
+                    </div>
+                    <div class="text-center">
+                        <div class="badge bg-info fs-4 p-3 rounded-circle">⚡</div>
+                        <small class="d-block mt-2 text-muted">Hızlı Öğrenen</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Öğrenilmemiş Kelimeler Modal -->
+<div class="modal fade" id="unlearnedWordsModal" tabindex="-1" aria-labelledby="unlearnedWordsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="unlearnedWordsModalLabel">
+                    <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                    Tüm Öğrenilmemiş Kelimeler ({{ ogrenilmemisler|length if ogrenilmemisler else 0 }})
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if ogrenilmemisler %}
+                    <div class="row">
+                        {% for word in ogrenilmemisler %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-warning">
+                                <div class="card-body">
+                                    <h6 class="card-title fw-bold text-warning">{{ word.word }}</h6>
+                                    <p class="card-text">{{ word.answer }}</p>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <span class="badge bg-primary">{{ word.front_language|upper }}</span>
+                                        <span class="badge bg-success">{{ word.back_language|upper }}</span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-layer-group me-1"></i>
+                                        {% if word.flashcard_name %}{{ word.flashcard_name }}{% else %}Flashcard{% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                        <h5>Tebrikler!</h5>
+                        <p class="text-muted">Tüm kelimeleri öğrendin 🎉</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Kapat
+                </button>
+                {% if ogrenilmemisler %}
+                <a href="/start_work" class="btn btn-warning">
+                    <i class="fas fa-play me-1"></i>Çalışmaya Başla
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bu Hafta Öğrenilen Kelimeler Modal -->
+<div class="modal fade" id="weeklyLearnedModal" tabindex="-1" aria-labelledby="weeklyLearnedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="weeklyLearnedModalLabel">
+                    <i class="fas fa-graduation-cap text-success me-2"></i>
+                    Bu Hafta Öğrenilen Tüm Kelimeler ({{ weekly_learned_words|length if weekly_learned_words else 0 }})
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if weekly_learned_words %}
+                    <div class="row">
+                        {% for word in weekly_learned_words %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-success">
+                                <div class="card-body">
+                                    <h6 class="card-title fw-bold text-success">{{ word.word }}</h6>
+                                    <p class="card-text">{{ word.answer }}</p>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <span class="badge bg-primary">{{ word.front_language|upper }}</span>
+                                        <span class="badge bg-success">{{ word.back_language|upper }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">{{ word.created_at }}</small>
+                                        <span class="badge bg-success">ÖĞRENİLDİ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-graduation-cap text-success fa-3x mb-3"></i>
+                        <h5>Bu hafta henüz kelime öğrenilmemiş</h5>
+                        <p class="text-muted">Çalışmaya başlayarak kelimelerini öğrenmeye başla!</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Kapat
+                </button>
+                <a href="/start_work" class="btn btn-success">
+                    <i class="fas fa-play me-1"></i>Daha Fazla Öğren
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Stat kartları giriş animasyonu
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 150);
+        });
+
+        // Chart bar hover tooltipleri
+        const chartBars = document.querySelectorAll('.chart-bar-learned');
+        chartBars.forEach(bar => {
+            bar.addEventListener('mouseenter', function() {
+                const dayName = this.getAttribute('data-day') || 'Gün';
+                const learned = this.getAttribute('data-learned') || '0';
+                const seen = this.getAttribute('data-seen') || '0';
+                const time = this.getAttribute('data-time') || '0';
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'chart-tooltip';
+                tooltip.style.cssText = `
+                    position: absolute;
+                    background: #28a745;
+                    color: white;
+                    padding: 12px 16px;
+                    border-radius: 10px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    top: -85px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    white-space: nowrap;
+                    z-index: 1000;
+                    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+                `;
+                tooltip.innerHTML = `
+                    <div style="color: #fff; font-weight: 700;">${dayName}</div>
+                    <div style="font-size: 11px; margin-top: 4px;">🎯 ${learned} kelime öğrenildi</div>
+                    <div style="font-size: 10px; opacity: 0.9;">📚 ${seen} kelime çalışıldı</div>
+                    <div style="font-size: 10px; opacity: 0.9;">⏱️ ${time} dakika</div>
+                `;
+                this.style.position = 'relative';
+                this.appendChild(tooltip);
+
+                // Arrow
+                const arrow = document.createElement('div');
+                arrow.style.cssText = `
+                    position: absolute;
+                    top: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 0;
+                    height: 0;
+                    border-left: 6px solid transparent;
+                    border-right: 6px solid transparent;
+                    border-top: 6px solid #28a745;
+                `;
+                tooltip.appendChild(arrow);
+            });
+
+            bar.addEventListener('mouseleave', function() {
+                const tooltip = this.querySelector('.chart-tooltip');
+                if (tooltip) {
+                    tooltip.remove();
+                }
+            });
+        });
+
+        // Progress ring animasyonu
+        const progressCircle = document.querySelector('.progress-circle.active');
+        if (progressCircle) {
+            setTimeout(() => {
+                progressCircle.style.transition = 'stroke-dashoffset 2s ease-out';
+            }, 500);
+        }
+
+        // Action button animasyonları
+        const actionBtns = document.querySelectorAll('.action-btn');
+        actionBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // Ripple efekti
+                const ripple = document.createElement('span');
+                ripple.style.cssText = `
+                    position: absolute;
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    background-color: rgba(102, 126, 234, 0.3);
+                `;
+                
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+
+        // Activity item animasyonları
+        const activityItems = document.querySelectorAll('.activity-item');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateX(0)';
+                }
+            });
+        });
+
+        activityItems.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(-20px)';
+            item.style.transition = `all 0.6s ease ${index * 100}ms`;
+            observer.observe(item);
+        });
+    });
+
+    // Bildirim sistemi
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed`;
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 15px;
+            border: none;
+            font-weight: 500;
+        `;
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <span class="me-3">${message}</span>
+                <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        // Auto remove
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // Ripple animation CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}
