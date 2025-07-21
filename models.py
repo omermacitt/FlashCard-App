@@ -19,6 +19,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(64), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    profile_image = db.Column(db.String(255), nullable=True)  # Profil resmi dosya adı
     last_study_date = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
     
@@ -92,36 +93,76 @@ class User(db.Model, UserMixin):
         """Günlük seriyi güncelle"""
         from models import UserDailyStats  # Circular import'u önlemek için burada import
         today = datetime.now(UTC).date()
-        yesterday = today - timedelta(days=1)
         
-        # Bugün çalışma var mı kontrol et
+        # Son çalışma tarihini kontrol et
+        if not self.last_study_date:
+            self.current_streak = 0
+            return
+        
+        last_study_date = self.last_study_date.date()
+        
+        # Bugün çalışmış mı kontrol et
         today_stats = UserDailyStats.query.filter_by(
             user_id=self.id, 
             date=today
         ).first()
         
-        # Dün çalışma var mı kontrol et
-        yesterday_stats = UserDailyStats.query.filter_by(
-            user_id=self.id, 
-            date=yesterday
-        ).first()
+        has_activity_today = (today_stats and 
+                             (today_stats.cards_added > 0 or today_stats.cards_seen > 0 or 
+                              today_stats.study_time_minutes > 0))
         
-        if today_stats and (today_stats.cards_added > 0 or today_stats.cards_seen > 0):
-            if yesterday_stats and (yesterday_stats.cards_added > 0 or yesterday_stats.cards_seen > 0):
-                # Seriyi devam ettir
-                self.current_streak += 1
+        # Günlük seriyi hesapla
+        if has_activity_today:
+            # Bugün çalışmışsa
+            if last_study_date == today:
+                # Bugün çalıştı - streak hesapla
+                streak_count = self.calculate_consecutive_days()
+                self.current_streak = streak_count
             else:
-                # Yeni seri başlat
-                self.current_streak = 1
-            
-            # En uzun seriyi güncelle
-            if self.current_streak > self.longest_streak:
-                self.longest_streak = self.current_streak
+                # Bugün çalıştı ama last_study_date güncel değil
+                self.update_study_date()
+                streak_count = self.calculate_consecutive_days()
+                self.current_streak = streak_count
         else:
-            # Seri kırıldı
-            self.current_streak = 0
+            # Bugün çalışmamış
+            streak_count = self.calculate_consecutive_days()
+            self.current_streak = streak_count
+        
+        # En uzun seriyi güncelle
+        if self.current_streak > self.longest_streak:
+            self.longest_streak = self.current_streak
         
         db.session.commit()
+    
+    def calculate_consecutive_days(self):
+        """Ardışık çalışma günlerini hesapla"""
+        from models import UserDailyStats
+        
+        if not self.last_study_date:
+            return 0
+        
+        today = datetime.now(UTC).date()
+        last_activity_date = self.last_study_date.date()
+        
+        # Bugünden geriye giderek ardışık günleri say
+        current_date = today
+        consecutive_days = 0
+        
+        while current_date >= last_activity_date:
+            day_stats = UserDailyStats.query.filter_by(
+                user_id=self.id,
+                date=current_date
+            ).first()
+            
+            if (day_stats and 
+                (day_stats.cards_added > 0 or day_stats.cards_seen > 0 or 
+                 day_stats.study_time_minutes > 0)):
+                consecutive_days += 1
+                current_date -= timedelta(days=1)
+            else:
+                break
+        
+        return consecutive_days
     
     def get_today_stats(self):
         """Bugünkü istatistikleri getir"""

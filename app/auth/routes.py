@@ -161,6 +161,9 @@ def dashboard():
     if not current_user.is_authenticated:
         return redirect(url_for('main.index'))
     
+    # Streak'i güncelle
+    current_user.update_streak()
+    
     # Kullanıcı istatistiklerini al
     user_stats = current_user.get_total_stats()
     today_stats = current_user.get_today_stats()
@@ -247,7 +250,7 @@ def dashboard():
         toplam_kelime=user_stats['total_words'],
         ogrenilen_kelime=user_stats['learned_words'],
         ogrenilmesi_beklenen=user_stats['pending_words'],
-        son_calistigi_tarih=current_user.last_study_date.strftime("%d.%m.%Y %H:%M") if current_user.last_study_date else None,
+        son_calistigi_tarih=current_user.last_study_date.strftime("%d.%m.%Y") if current_user.last_study_date else None,
         
         # Gamification verileri
         streak_days=current_user.current_streak,

@@ -115,8 +115,14 @@
     <div class="row">
         <div class="col-12">
             <div class="profile-card text-center">
-                <div class="profile-avatar">
-                    <i class="fas fa-user"></i>
+                <div class="profile-avatar" id="profileAvatarContainer">
+                    {% if current_user.profile_image %}
+                        <img src="{{ url_for('static', filename='uploads/profile_images/' + current_user.profile_image) }}" 
+                             alt="Profile Image" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
                 </div>
                 <h2 class="mb-2">{{ current_user.username }}</h2>
                 <p class="mb-3"><i class="fas fa-envelope me-2"></i>{{ current_user.email }}</p>
@@ -253,8 +259,37 @@
                 <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Profili Düzenle</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{{ url_for('main.update_profile') }}">
+            <form method="POST" action="{{ url_for('main.update_profile') }}" enctype="multipart/form-data">
                 <div class="modal-body" style="padding: 2rem;">
+                    <!-- Profil Resmi Yükleme -->
+                    <div class="mb-4 text-center">
+                        <label class="form-label"><i class="fas fa-image me-2"></i>Profil Resmi</label>
+                        <div class="profile-image-upload">
+                            <div class="current-image mb-3" id="currentImagePreview" style="position: relative; display: inline-block;">
+                                {% if current_user.profile_image %}
+                                    <img src="{{ url_for('static', filename='uploads/profile_images/' + current_user.profile_image) }}" 
+                                         alt="Current Profile" 
+                                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 3px solid #667eea;">
+                                    <button type="button" class="btn btn-danger btn-sm" 
+                                            style="position: absolute; top: -5px; right: -5px; border-radius: 50%; width: 25px; height: 25px; padding: 0; display: flex; align-items: center; justify-content: center;"
+                                            onclick="deleteProfileImage()" 
+                                            title="Profil resmini sil">
+                                        <i class="fas fa-times" style="font-size: 0.7rem;"></i>
+                                    </button>
+                                {% else %}
+                                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <input type="file" class="form-control" id="profile_image" name="profile_image" accept="image/*" onchange="previewImage(this)">
+                            <input type="hidden" id="delete_profile_image" name="delete_profile_image" value="false">
+                            <small class="text-muted mt-2 d-block">JPG, PNG veya GIF formatında. Maksimum 5MB.</small>
+                        </div>
+                    </div>
+                    
+                    <hr class="mb-4">
+                    
                     <div class="mb-3">
                         <label for="username" class="form-label">Kullanıcı Adı</label>
                         <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
@@ -288,4 +323,92 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('currentImagePreview');
+    const deleteField = document.getElementById('delete_profile_image');
+    const file = input.files[0];
+    
+    if (file) {
+        // Reset delete flag
+        deleteField.value = 'false';
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <div style="position: relative; display: inline-block;">
+                    <img src="${e.target.result}" 
+                         alt="Preview" 
+                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 3px solid #667eea;">
+                    <button type="button" class="btn btn-danger btn-sm" 
+                            style="position: absolute; top: -5px; right: -5px; border-radius: 50%; width: 25px; height: 25px; padding: 0; display: flex; align-items: center; justify-content: center;"
+                            onclick="clearImageSelection()" 
+                            title="Seçimi temizle">
+                        <i class="fas fa-times" style="font-size: 0.7rem;"></i>
+                    </button>
+                </div>
+            `;
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+function deleteProfileImage() {
+    if (confirm('Profil resminizi silmek istediğinizden emin misiniz?')) {
+        const preview = document.getElementById('currentImagePreview');
+        const deleteField = document.getElementById('delete_profile_image');
+        const fileInput = document.getElementById('profile_image');
+        
+        // Set delete flag
+        deleteField.value = 'true';
+        
+        // Clear file input
+        fileInput.value = '';
+        
+        // Show default avatar
+        preview.innerHTML = `
+            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto;">
+                <i class="fas fa-user"></i>
+            </div>
+            <small class="text-danger mt-2 d-block"><i class="fas fa-trash me-1"></i>Resim silinmek üzere işaretlendi</small>
+        `;
+    }
+}
+
+function clearImageSelection() {
+    const preview = document.getElementById('currentImagePreview');
+    const fileInput = document.getElementById('profile_image');
+    const deleteField = document.getElementById('delete_profile_image');
+    
+    // Clear file input
+    fileInput.value = '';
+    deleteField.value = 'false';
+    
+    // Restore original image or default avatar
+    {% if current_user.profile_image %}
+        preview.innerHTML = `
+            <div style="position: relative; display: inline-block;">
+                <img src="{{ url_for('static', filename='uploads/profile_images/' + current_user.profile_image) }}" 
+                     alt="Current Profile" 
+                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 3px solid #667eea;">
+                <button type="button" class="btn btn-danger btn-sm" 
+                        style="position: absolute; top: -5px; right: -5px; border-radius: 50%; width: 25px; height: 25px; padding: 0; display: flex; align-items: center; justify-content: center;"
+                        onclick="deleteProfileImage()" 
+                        title="Profil resmini sil">
+                    <i class="fas fa-times" style="font-size: 0.7rem;"></i>
+                </button>
+            </div>
+        `;
+    {% else %}
+        preview.innerHTML = `
+            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto;">
+                <i class="fas fa-user"></i>
+            </div>
+        `;
+    {% endif %}
+}
+</script>
 {% endblock %}
