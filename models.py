@@ -144,11 +144,16 @@ class User(db.Model, UserMixin):
         today = datetime.now(UTC).date()
         last_activity_date = self.last_study_date.date()
         
-        # Bugünden geriye giderek ardışık günleri say
-        current_date = today
+        # Eğer son aktivite bugünden 1 günden fazla eskiyse streak sıfırlanmalı
+        days_since_last_activity = (today - last_activity_date).days
+        if days_since_last_activity > 1:
+            return 0
+        
+        # Son aktivite tarihinden geriye giderek ardışık günleri say
+        current_date = last_activity_date
         consecutive_days = 0
         
-        while current_date >= last_activity_date:
+        while True:
             day_stats = UserDailyStats.query.filter_by(
                 user_id=self.id,
                 date=current_date

@@ -296,7 +296,8 @@
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">E-posta</label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+                        <small class="text-muted">E-posta adresi değiştirilemez.</small>
                     </div>
                     <hr>
                     <h6><i class="fas fa-lock me-2"></i>Şifre Değiştir (İsteğe bağlı)</h6>
