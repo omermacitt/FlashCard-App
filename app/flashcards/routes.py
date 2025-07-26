@@ -8,6 +8,7 @@ from flask_login import current_user
 from db import db
 from sentence_transformers import SentenceTransformer, util
 from models import Word, User, WordProgress, Flashcard, UserStudySession, UserDailyStats
+from app.llm_utils import generate_example_sentence
 
 flashcards = Blueprint('flashcards', __name__)
 model = SentenceTransformer("distiluse-base-multilingual-cased-v2")
@@ -35,6 +36,25 @@ def add_single_word(flashcard_id):
     front_word = request.form['front_word'].strip()
     back_word = request.form['back_word'].strip()
     difficulty = request.form.get('difficulty', 'medium')
+    example_sentence = request.form.get('example_sentence', '').strip()
+    auto_fill_example = request.form.get('auto_fill_example') == 'on'
+    
+    # Auto-generate example sentence if requested and no example provided
+    if auto_fill_example and not example_sentence:
+        try:
+            generated_sentence = generate_example_sentence(
+                word=front_word,
+                meaning=back_word,
+                front_language=flashcard.front_language,
+                back_language=flashcard.back_language
+            )
+            if generated_sentence:
+                example_sentence = generated_sentence
+                flash(f'Örnek cümle otomatik oluşturuldu: "{example_sentence}"', 'info')
+            else:
+                flash('Örnek cümle oluşturulamadı. Lütfen manuel olarak girin.', 'warning')
+        except Exception as e:
+            flash('Örnek cümle oluşturulurken hata oluştu. Lütfen manuel olarak girin.', 'warning')
 
     # Check if the exact word-meaning pair already exists in this flashcard
     existing_word_in_flashcard = db.session.query(Word).filter(
@@ -86,6 +106,10 @@ def add_single_word(flashcard_id):
     # İleri yönlü kelime
     if existing_word:
         word = existing_word
+        # Update example sentence if auto-fill was requested and word doesn't have one
+        if auto_fill_example and not word.example_sentence and example_sentence:
+            word.example_sentence = example_sentence
+            word.updated_at = datetime.now(UTC)
     else:
         try:
             word = Word(
@@ -94,6 +118,7 @@ def add_single_word(flashcard_id):
                 front_language=flashcard.front_language,
                 back_language=flashcard.back_language,
                 difficulty=difficulty,
+                example_sentence=example_sentence,
                 user_id=current_user.id
             )
             db.session.add(word)
@@ -124,6 +149,7 @@ def add_single_word(flashcard_id):
                 front_language=flashcard.back_language,
                 back_language=flashcard.front_language,
                 difficulty=difficulty,
+                example_sentence=None,  # Ters kelime için örnek cümle oluşturulmaz
                 user_id=current_user.id
             )
             db.session.add(word_reverse)
@@ -246,6 +272,25 @@ def add_word_with_new_meaning(flashcard_id):
     front_word = request.form['front_word'].strip()
     back_word = request.form['back_word'].strip()
     difficulty = request.form.get('difficulty', 'medium')
+    example_sentence = request.form.get('example_sentence', '').strip()
+    auto_fill_example = request.form.get('auto_fill_example') == 'on'
+    
+    # Auto-generate example sentence if requested and no example provided
+    if auto_fill_example and not example_sentence:
+        try:
+            generated_sentence = generate_example_sentence(
+                word=front_word,
+                meaning=back_word,
+                front_language=flashcard.front_language,
+                back_language=flashcard.back_language
+            )
+            if generated_sentence:
+                example_sentence = generated_sentence
+                flash(f'Örnek cümle otomatik oluşturuldu: "{example_sentence}"', 'info')
+            else:
+                flash('Örnek cümle oluşturulamadı. Lütfen manuel olarak girin.', 'warning')
+        except Exception as e:
+            flash('Örnek cümle oluşturulurken hata oluştu. Lütfen manuel olarak girin.', 'warning')
     
     if not front_word or not back_word:
         flash('Kelime ve anlamı boş olamaz!', 'error')
@@ -259,6 +304,7 @@ def add_word_with_new_meaning(flashcard_id):
             front_language=flashcard.front_language,
             back_language=flashcard.back_language,
             difficulty=difficulty,
+            example_sentence=example_sentence,
             user_id=current_user.id
         )
         db.session.add(word)
@@ -360,6 +406,7 @@ def add_bulk_word(flashcard_id):
                                 front_language=front_lang,
                                 back_language=back_lang,
                                 difficulty=difficulty,
+                                example_sentence=None,  # Bulk upload için örnek cümle oluşturulmaz
                                 user_id=current_user.id
                             )
                             db.session.add(word)
@@ -397,6 +444,7 @@ def add_bulk_word(flashcard_id):
                                 front_language=back_lang,
                                 back_language=front_lang,
                                 difficulty=difficulty,
+                                example_sentence=None,  # Bulk upload için örnek cümle oluşturulmaz
                                 user_id=current_user.id
                             )
                             db.session.add(inverse_word)
@@ -667,6 +715,29 @@ def edit_word(flashcard_id, word_id):
         word.answer = request.form['back_word']
         word.back_language = request.form['back_language']
         word.difficulty = request.form['difficulty']
+        
+        # Handle example sentence
+        example_sentence = request.form.get('example_sentence', '').strip()
+        auto_fill_example = request.form.get('auto_fill_example') == 'on'
+        
+        # Auto-generate example sentence if requested and no example provided
+        if auto_fill_example and not example_sentence:
+            try:
+                generated_sentence = generate_example_sentence(
+                    word=word.word,
+                    meaning=word.answer,
+                    front_language=word.front_language,
+                    back_language=word.back_language
+                )
+                if generated_sentence:
+                    example_sentence = generated_sentence
+                    flash(f'Örnek cümle otomatik oluşturuldu: "{example_sentence}"', 'info')
+                else:
+                    flash('Örnek cümle oluşturulamadı. Lütfen manuel olarak girin.', 'warning')
+            except Exception as e:
+                flash('Örnek cümle oluşturulurken hata oluştu. Lütfen manuel olarak girin.', 'warning')
+        
+        word.example_sentence = example_sentence
         word.updated_at = datetime.now(UTC)
         db.session.commit()
         return redirect(url_for("flashcards.flashcard_detail", flashcard_id=flashcard_id))
@@ -1694,6 +1765,7 @@ def copy_flashcard(flashcard_id):
                 front_language=original_word.front_language,
                 back_language=original_word.back_language,
                 difficulty=original_word.difficulty,
+                example_sentence=original_word.example_sentence,  # Kopyalanan kelimeden örnek cümleyi koru
                 user_id=current_user.id
             )
             db.session.add(new_word)

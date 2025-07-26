@@ -235,6 +235,7 @@ class Word(db.Model):
     front_language = db.Column(db.String(128), nullable=False)
     back_language = db.Column(db.String(128), nullable=False)
     difficulty = db.Column(db.String(128), nullable=False)
+    example_sentence = db.Column(db.Text, nullable=True)  # Örnek cümle için yeni alan
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))

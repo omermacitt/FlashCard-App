@@ -364,15 +364,15 @@
                     </h6>
                     <form method="POST" action="/flashcard/{{ flashcard.id }}/words/add/new-meaning">
                         <input type="hidden" name="front_word" value="{{ searched_front_word }}">
-                        <div class="row align-items-end">
-                            <div class="col-md-4">
+                        <div class="row">
+                            <div class="col-md-6">
                                 <label class="form-label fw-semibold small">
                                     <i class="fas fa-language me-1"></i>{{ flashcard.front_language|upper }} Kelime
                                 </label>
                                 <input type="text" class="form-control" value="{{ searched_front_word }}" readonly
                                        style="border-radius: 8px; background-color: #f8f9fa;">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="new_meaning_back_word" class="form-label fw-semibold small">
                                     <i class="fas fa-language me-1"></i>{{ flashcard.back_language|upper }} Anlamı
                                 </label>
@@ -380,14 +380,37 @@
                                        placeholder="Yeni anlamı girin..." value="{{ searched_back_word or '' }}"
                                        style="border-radius: 8px;" required>
                             </div>
-                            <div class="col-md-4">
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label for="new_meaning_example_sentence" class="form-label fw-semibold small mb-0">
+                                        <i class="fas fa-quote-left me-1"></i>Örnek Cümle
+                                    </label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="new_meaning_auto_fill_example" name="auto_fill_example">
+                                        <label class="form-check-label small text-muted" for="new_meaning_auto_fill_example">
+                                            <i class="fas fa-robot me-1"></i>Otomatik oluştur
+                                        </label>
+                                    </div>
+                                </div>
+                                <textarea class="form-control" id="new_meaning_example_sentence" name="example_sentence" 
+                                          placeholder="Kelimeyi içeren örnek bir cümle yazın..."
+                                          rows="2" style="border-radius: 8px; resize: vertical;"></textarea>
+                            </div>
+                        </div>
+                        <div class="row mt-2 align-items-end">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Zorluk</label>
+                                <select class="form-select form-select-sm" name="difficulty" style="border-radius: 8px;">
+                                    <option value="easy">Kolay</option>
+                                    <option value="medium" selected>Orta</option>
+                                    <option value="hard">Zor</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
                                 <div class="d-flex gap-2">
-                                    <select class="form-select form-select-sm" name="difficulty" style="border-radius: 8px;">
-                                        <option value="easy">Kolay</option>
-                                        <option value="medium" selected>Orta</option>
-                                        <option value="hard">Zor</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-primary btn-sm">
+                                    <button type="submit" class="btn btn-primary btn-sm flex-fill">
                                         <i class="fas fa-plus me-1"></i>Ekle
                                     </button>
                                     <button type="button" class="btn btn-outline-secondary btn-sm" onclick="hideAddNewMeaningForm()">
@@ -497,6 +520,25 @@
                                         <option value="medium" selected>Orta</option>
                                         <option value="hard">Zor</option>
                                     </select>
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <label for="example_sentence" class="form-label fw-semibold mb-0">
+                                            <i class="fas fa-quote-left me-2"></i>Örnek Cümle
+                                        </label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="auto_fill_example" name="auto_fill_example">
+                                            <label class="form-check-label small text-muted" for="auto_fill_example">
+                                                <i class="fas fa-robot me-1"></i>Otomatik oluştur
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <textarea class="form-control form-control-lg" id="example_sentence" name="example_sentence" 
+                                              placeholder="Kelimeyi içeren örnek bir cümle yazın (veya otomatik oluşturmak için yukarıdaki kutuyu işaretleyin)..."
+                                              rows="3" style="border-radius: 12px; border: 2px solid #e9ecef; resize: vertical;"></textarea>
+                                    <small class="text-muted mt-1">
+                                        <i class="fas fa-info-circle me-1"></i>Örnek cümle kelimeyi hatırlamanıza yardımcı olur
+                                    </small>
                                 </div>
                             </div>
 

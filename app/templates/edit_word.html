@@ -303,6 +303,28 @@
                                placeholder="Çeviriyi girin...">
                     </div>
 
+                    <!-- Example Sentence Input -->
+                    <div class="form-group-modern">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label class="form-label-modern mb-0" for="exampleSentence">Örnek Cümle</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="autoFillExample" name="auto_fill_example">
+                                <label class="form-check-label small text-muted" for="autoFillExample">
+                                    <i class="fas fa-robot me-1"></i>Otomatik oluştur
+                                </label>
+                            </div>
+                        </div>
+                        <textarea class="form-control form-control-modern" 
+                                  id="exampleSentence"
+                                  name="example_sentence" 
+                                  rows="3"
+                                  placeholder="Kelimeyi içeren örnek bir cümle yazın (veya otomatik oluşturmak için yukarıdaki kutuyu işaretleyin)..."
+                                  style="resize: vertical;">{{ word.example_sentence or '' }}</textarea>
+                        <small class="text-muted mt-1">
+                            <i class="fas fa-info-circle me-1"></i>Örnek cümle kelimeyi hatırlamanıza yardımcı olur
+                        </small>
+                    </div>
+
                     <!-- Language Selection -->
                     <div class="form-group-modern">
                         <label class="form-label-modern">Dil Yönü</label>
