@@ -248,18 +248,161 @@
         </div>
     </div>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ 'warning' if category == 'warning' else 'success' }} alert-dismissible fade show" role="alert" style="border-radius: 12px;">
-                    <i class="fas fa-{{ 'exclamation-triangle' if category == 'warning' else 'check-circle' }} me-2"></i>
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- Flash Messages are now handled by base.html to avoid duplication -->
+
+    <!-- Existing Word Found Alert -->
+    {% if existing_word %}
+    <div class="alert alert-info alert-persistent border-0 shadow-sm" style="border-radius: 15px; background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);">
+        <div class="d-flex align-items-center mb-3">
+            <div class="me-3">
+                <i class="fas fa-info-circle fa-2x" style="color: #1976d2;"></i>
+            </div>
+            <div>
+                <h5 class="mb-1 fw-bold" style="color: #1976d2;">
+                    <i class="fas fa-search me-2"></i>
+                    {% if different_meaning %}
+                        Kelime Farklı Anlamla Mevcut!
+                    {% else %}
+                        Kelime Zaten Mevcut!
+                    {% endif %}
+                </h5>
+                <p class="mb-0 text-muted">
+                    {% if different_meaning %}
+                        "{{ searched_front_word }}" kelimesi zaten kayıtlı ama farklı bir anlamla. Mevcut anlamı güncellemeyi veya yeni anlamla ayrı bir giriş eklemeyi seçebilirsiniz.
+                    {% else %}
+                        Aradığınız kelime bu flashcard'da zaten kayıtlı. Mevcut anlamı görüntüleyebilir veya güncelleyebilirsiniz.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card border-0" style="background: rgba(255, 255, 255, 0.7); border-radius: 12px;">
+                    <div class="card-body p-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="text-center p-2">
+                                    <small class="text-muted fw-bold d-block mb-1">{{ flashcard.front_language|upper }} KELİME</small>
+                                    <span class="h5 fw-bold" style="color: #1976d2;">{{ existing_word.word }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-center p-2">
+                                    <small class="text-muted fw-bold d-block mb-1">{{ flashcard.back_language|upper }} ANLAM</small>
+                                    <span class="h5 fw-bold" style="color: #7b1fa2;">{{ existing_word.answer }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            {% endfor %}
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex flex-column gap-2">
+                    {% if different_meaning %}
+                        <button class="btn btn-outline-success btn-sm" onclick="keepExisting()" style="border-radius: 8px;">
+                            <i class="fas fa-check me-1"></i>Mevcut Anlamı Koru
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="showUpdateForm()" style="border-radius: 8px;">
+                            <i class="fas fa-edit me-1"></i>Mevcut Anlamı Güncelle
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showAddNewMeaningForm()" style="border-radius: 8px;">
+                            <i class="fas fa-plus me-1"></i>Yeni Anlamla Ekle
+                        </button>
+                    {% else %}
+                        <button class="btn btn-outline-success btn-sm" onclick="keepExisting()" style="border-radius: 8px;">
+                            <i class="fas fa-check me-1"></i>Bu Anlamı Koru
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="showUpdateForm()" style="border-radius: 8px;">
+                            <i class="fas fa-edit me-1"></i>Anlamı Güncelle
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Update Form (Hidden by default) -->
+        <div id="updateForm" class="mt-3" style="display: none;">
+            <div class="card border-0" style="background: rgba(255, 255, 255, 0.9); border-radius: 12px;">
+                <div class="card-body p-3">
+                    <h6 class="fw-bold mb-2 text-warning">
+                        <i class="fas fa-edit me-1"></i>Mevcut Anlamı Güncelle
+                    </h6>
+                    <form method="POST" action="/flashcard/{{ flashcard.id }}/words/update/{{ existing_word.id }}">
+                        <div class="row align-items-end">
+                            <div class="col-md-8">
+                                <label for="new_back_word" class="form-label fw-semibold small">
+                                    <i class="fas fa-language me-1"></i>Yeni {{ flashcard.back_language|upper }} Anlamı
+                                </label>
+                                <input type="text" class="form-control" id="new_back_word" name="new_back_word" 
+                                       placeholder="Yeni anlamı girin..." value="{{ searched_back_word or '' }}"
+                                       style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success btn-sm flex-fill">
+                                        <i class="fas fa-save me-1"></i>Güncelle
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="hideUpdateForm()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% if different_meaning %}
+        <!-- Add New Meaning Form (Hidden by default) -->
+        <div id="addNewMeaningForm" class="mt-3" style="display: none;">
+            <div class="card border-0" style="background: rgba(255, 255, 255, 0.9); border-radius: 12px;">
+                <div class="card-body p-3">
+                    <h6 class="fw-bold mb-2 text-primary">
+                        <i class="fas fa-plus me-1"></i>Yeni Anlamla Ayrı Giriş Ekle
+                    </h6>
+                    <form method="POST" action="/flashcard/{{ flashcard.id }}/words/add/new-meaning">
+                        <input type="hidden" name="front_word" value="{{ searched_front_word }}">
+                        <div class="row align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">
+                                    <i class="fas fa-language me-1"></i>{{ flashcard.front_language|upper }} Kelime
+                                </label>
+                                <input type="text" class="form-control" value="{{ searched_front_word }}" readonly
+                                       style="border-radius: 8px; background-color: #f8f9fa;">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="new_meaning_back_word" class="form-label fw-semibold small">
+                                    <i class="fas fa-language me-1"></i>{{ flashcard.back_language|upper }} Anlamı
+                                </label>
+                                <input type="text" class="form-control" id="new_meaning_back_word" name="back_word" 
+                                       placeholder="Yeni anlamı girin..." value="{{ searched_back_word or '' }}"
+                                       style="border-radius: 8px;" required>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" name="difficulty" style="border-radius: 8px;">
+                                        <option value="easy">Kolay</option>
+                                        <option value="medium" selected>Orta</option>
+                                        <option value="hard">Zor</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-plus me-1"></i>Ekle
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="hideAddNewMeaningForm()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         {% endif %}
-    {% endwith %}
+    </div>
+    {% endif %}
 
     <!-- Method Selection -->
     <div class="method-selection" id="methodSelection">
@@ -653,6 +796,38 @@ function removeFile(index) {
     if (selectedFiles.length === 0) {
         document.getElementById('uploadBtn').disabled = true;
     }
+}
+
+// Existing word functions
+function keepExisting() {
+    // Simply reload the page to go back to the normal add form
+    window.location.href = `/flashcard/{{ flashcard.id }}/words/add`;
+}
+
+function showUpdateForm() {
+    // Hide other forms first
+    const addNewForm = document.getElementById('addNewMeaningForm');
+    if (addNewForm) addNewForm.style.display = 'none';
+    
+    document.getElementById('updateForm').style.display = 'block';
+    document.getElementById('new_back_word').focus();
+}
+
+function hideUpdateForm() {
+    document.getElementById('updateForm').style.display = 'none';
+}
+
+function showAddNewMeaningForm() {
+    // Hide other forms first
+    const updateForm = document.getElementById('updateForm');
+    if (updateForm) updateForm.style.display = 'none';
+    
+    document.getElementById('addNewMeaningForm').style.display = 'block';
+    document.getElementById('new_meaning_back_word').focus();
+}
+
+function hideAddNewMeaningForm() {
+    document.getElementById('addNewMeaningForm').style.display = 'none';
 }
 
 

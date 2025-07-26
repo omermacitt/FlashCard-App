@@ -36,6 +36,7 @@ def add_single_word(flashcard_id):
     back_word = request.form['back_word'].strip()
     difficulty = request.form.get('difficulty', 'medium')
 
+    # Check if the exact word-meaning pair already exists in this flashcard
     existing_word_in_flashcard = db.session.query(Word).filter(
         Word.flashcards.any(id=flashcard_id),
         Word.word.ilike(front_word),
@@ -43,9 +44,28 @@ def add_single_word(flashcard_id):
     ).first()
 
     if existing_word_in_flashcard:
-        # Bu kelime zaten bu flashcard'da var
-        flash('Bu kelime zaten bu flashcard\'ta kayıtlı!', 'warning')
-        return render_template('add_word_to_flashcard.html', flashcard=flashcard)
+        # Bu kelime zaten bu flashcard'da var - mevcut anlamı göster ve güncelleme seçeneği sun
+        return render_template('add_word_to_flashcard.html', 
+                             flashcard=flashcard, 
+                             existing_word=existing_word_in_flashcard,
+                             searched_front_word=front_word,
+                             searched_back_word=back_word)
+
+    # Check if the same front word exists with different meaning in this flashcard
+    existing_front_word_in_flashcard = db.session.query(Word).filter(
+        Word.flashcards.any(id=flashcard_id),
+        Word.word.ilike(front_word),
+        ~Word.answer.ilike(back_word)
+    ).first()
+
+    if existing_front_word_in_flashcard:
+        # Aynı kelime var ama farklı anlam - kullanıcıya seçenek sun
+        return render_template('add_word_to_flashcard.html', 
+                             flashcard=flashcard, 
+                             existing_word=existing_front_word_in_flashcard,
+                             searched_front_word=front_word,
+                             searched_back_word=back_word,
+                             different_meaning=True)
 
     # Word tablosunda mevcut kelimeyi ara (case-insensitive)
     existing_word = Word.query.filter(
@@ -185,6 +205,85 @@ def add_single_word(flashcard_id):
     db.session.commit()
     flash('Kelime başarıyla eklendi!', 'success')
     return render_template('add_word_to_flashcard.html', flashcard=flashcard)
+
+
+@flashcards.route("/flashcard/<int:flashcard_id>/words/update/<int:word_id>", methods=["POST"])
+def update_existing_word(flashcard_id, word_id):
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    
+    flashcard = Flashcard.query.filter_by(id=flashcard_id, user_id=current_user.id).first()
+    if not flashcard:
+        return "Flashcard bulunamadı", 404
+    
+    word = Word.query.get(word_id)
+    if not word or word not in flashcard.words:
+        flash('Kelime bulunamadı!', 'error')
+        return redirect(url_for('flashcards.add_word_to_flashcard', flashcard_id=flashcard_id))
+    
+    new_back_word = request.form['new_back_word'].strip()
+    
+    if new_back_word:
+        word.answer = new_back_word
+        word.updated_at = datetime.now(UTC)
+        db.session.commit()
+        flash('Kelime anlamı başarıyla güncellendi!', 'success')
+    else:
+        flash('Yeni anlam boş olamaz!', 'error')
+    
+    return redirect(url_for('flashcards.add_word_to_flashcard', flashcard_id=flashcard_id))
+
+
+@flashcards.route("/flashcard/<int:flashcard_id>/words/add/new-meaning", methods=["POST"])
+def add_word_with_new_meaning(flashcard_id):
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    
+    flashcard = Flashcard.query.filter_by(id=flashcard_id, user_id=current_user.id).first()
+    if not flashcard:
+        return "Flashcard bulunamadı", 404
+    
+    front_word = request.form['front_word'].strip()
+    back_word = request.form['back_word'].strip()
+    difficulty = request.form.get('difficulty', 'medium')
+    
+    if not front_word or not back_word:
+        flash('Kelime ve anlamı boş olamaz!', 'error')
+        return redirect(url_for('flashcards.add_word_to_flashcard', flashcard_id=flashcard_id))
+    
+    # Create new word with different meaning
+    try:
+        word = Word(
+            word=front_word,
+            answer=back_word,
+            front_language=flashcard.front_language,
+            back_language=flashcard.back_language,
+            difficulty=difficulty,
+            user_id=current_user.id
+        )
+        db.session.add(word)
+        db.session.flush()  # ID'yi almak için
+        
+        # Add to flashcard
+        flashcard.words.append(word)
+        
+        # Create WordProgress
+        word_progress = WordProgress(
+            word_id=word.id,
+            user_id=current_user.id,
+            is_learned=False,
+            flashcard_id=flashcard_id
+        )
+        db.session.add(word_progress)
+        
+        db.session.commit()
+        flash('Kelime yeni anlamıyla başarıyla eklendi!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Kelime ekleme hatası: {str(e)}', 'error')
+    
+    return redirect(url_for('flashcards.add_word_to_flashcard', flashcard_id=flashcard_id))
 
 
 @flashcards.route("/flashcard/<int:flashcard_id>/words/add/bulk", methods=["POST"])

@@ -205,9 +205,9 @@
             });
         });
         
-        // Auto-hide alerts after 5 seconds
+        // Auto-hide alerts after 5 seconds (except persistent ones)
         setTimeout(() => {
-            const alerts = document.querySelectorAll('.alert');
+            const alerts = document.querySelectorAll('.alert:not(.alert-persistent)');
             alerts.forEach(alert => {
                 const bsAlert = new bootstrap.Alert(alert);
                 bsAlert.close();
